@@ -35,6 +35,12 @@
    - Now shows "Email sent!" toast and navigates to result page
    - Falls back to "Email sent successfully!" when output is empty
 
+7. Backend API Changes (April 11, 2026):
+   - YoloEmailForm now sends `process: 'gen-email'` (same as Detailed form)
+   - History page: cards are fully clickable, resend preloads form data
+   - Error handling: forms redirect to /result with error state on API failure
+   - EmailResult page: never blank, shows "Something went wrong" with navigation options
+
 ## Current Focus
 
 - Application is built and ready for testing
@@ -46,6 +52,7 @@
 2. Verify email composition modes work
 3. Test history and settings pages
 4. Test sender configuration persists
+5. Test YOLO and Detailed forms with same payload
 
 ## Important Patterns
 
@@ -55,3 +62,5 @@
 - Password strength uses `checks` object with: length, lowercase, uppercase, number, special
 - Email API success: `response.data.success === true || response.status === 200`
 - Sender config payload: `{ from_email, from_name }` (optional fields)
+- Both YOLO and Detailed forms use `process: 'gen-email'`
+- Result page handles missing state gracefully - redirects to home

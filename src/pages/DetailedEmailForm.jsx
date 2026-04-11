@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Layout } from '../components/layout/Layout';
@@ -40,6 +40,7 @@ const fontOptions = [
 
 export const DetailedEmailForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -60,6 +61,21 @@ export const DetailedEmailForm = () => {
     ctaText: '',
   });
   const [errors, setErrors] = useState({});
+
+  // Preload form data from history if available
+  useEffect(() => {
+    const historyData = location.state?.historyItem;
+    if (historyData) {
+      setFormData(prev => ({
+        ...prev,
+        to: historyData.to || prev.to,
+        subject: historyData.subject || prev.subject,
+        prompt: historyData.prompt || prev.prompt,
+      }));
+      // Clear the state so refreshing doesn't keep preloaded data
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));

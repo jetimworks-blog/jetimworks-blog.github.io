@@ -6,15 +6,16 @@
 ✅ TailwindCSS v4 configuration
 ✅ Authentication (register, login, logout)
 ✅ Protected routes
-✅ YOLO email form (multi-step)
-✅ Detailed email form (multi-step wizard)
-✅ Email result preview with error handling
-✅ History page with filtering
+✅ YOLO email form (multi-step) - uses `process: gen-email`
+✅ Detailed email form (multi-step wizard) - uses `process: gen-email`
+✅ Email result preview with error handling (never blank)
+✅ History page with fully clickable cards
 ✅ Settings page with sender configuration
 ✅ Build passes successfully
 ✅ UI fixes (button centering, password strength display)
 ✅ Sender email/name configuration (from_email, from_name)
 ✅ Fixed email send success handling (empty output = success)
+✅ Form preloading when resending from history
 
 ## What's Left
 
@@ -37,8 +38,9 @@
 |------|---------|
 | src/lib/api.js | Axios client with JWT interceptors |
 | src/context/AuthContext.jsx | Auth state management |
-| src/pages/YoloEmailForm.jsx | Quick email form (process: email) |
+| src/pages/YoloEmailForm.jsx | Quick email form (process: gen-email) |
 | src/pages/DetailedEmailForm.jsx | Detailed email wizard (process: gen-email) |
 | src/pages/EmailResult.jsx | Email result with error handling |
+| src/pages/HistoryPage.jsx | Email history with clickable cards |
 | src/pages/SettingsPage.jsx | API key + sender configuration |
 | src/lib/validation.js | Validation utils |

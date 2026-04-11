@@ -6,50 +6,68 @@ import { Layout } from '../components/layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { History, Mail, Calendar, ChevronDown, ChevronUp, RefreshCw, Trash2, Sparkles, Zap } from 'lucide-react';
-
-const HISTORY_STORAGE_KEY = 'email_crafter_history';
+import { historyAPI } from '../lib/api';
+import { 
+  History, 
+  Mail, 
+  Calendar, 
+  ChevronDown, 
+  ChevronUp, 
+  RefreshCw, 
+  Trash2, 
+  Sparkles, 
+  Zap,
+  Clock,
+  CheckCircle,
+  XCircle,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 
 export const HistoryPage = () => {
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [offset, setOffset] = useState(0);
 
-  // Load history from localStorage (and sync with backend in future)
+  const loadHistory = async (resetOffset = true) => {
+    const currentOffset = resetOffset ? 0 : offset;
+    
+    if (resetOffset) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+
+    try {
+      const response = await historyAPI.getAll(limit, currentOffset);
+      const newData = response.data.data || [];
+      
+      if (resetOffset) {
+        setHistory(newData);
+      } else {
+        setHistory(prev => [...prev, ...newData]);
+      }
+      
+      setTotal(response.data.total || 0);
+      setOffset(currentOffset + newData.length);
+    } catch (error) {
+      console.error('Failed to load history:', error);
+      toast.error('Failed to load history');
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
     loadHistory();
   }, []);
-
-  const loadHistory = () => {
-    try {
-      const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
-      if (storedHistory) {
-        const parsed = JSON.parse(storedHistory);
-        setHistory(parsed.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-      }
-    } catch (error) {
-      console.error('Failed to load history:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteHistoryItem = (id) => {
-    const updatedHistory = history.filter(item => item.id !== id);
-    setHistory(updatedHistory);
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(updatedHistory));
-    toast.success('Item removed from history');
-  };
-
-  const clearAllHistory = () => {
-    if (window.confirm('Are you sure you want to clear all history? This cannot be undone.')) {
-      setHistory([]);
-      localStorage.removeItem(HISTORY_STORAGE_KEY);
-      toast.success('All history cleared');
-    }
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -62,6 +80,40 @@ export const HistoryPage = () => {
     });
   };
 
+  const formatDuration = (ms) => {
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
+  };
+
+  const getProcessIcon = (process) => {
+    switch (process) {
+      case 'email':
+        return <Zap size={12} />;
+      case 'chat':
+        return <Mail size={12} />;
+      case 'gen':
+      case 'gen-email':
+        return <Sparkles size={12} />;
+      default:
+        return <Mail size={12} />;
+    }
+  };
+
+  const getProcessLabel = (process) => {
+    switch (process) {
+      case 'email':
+        return 'YOLO';
+      case 'chat':
+        return 'Chat';
+      case 'gen':
+        return 'Generate';
+      case 'gen-email':
+        return 'Detailed';
+      default:
+        return process || 'Unknown';
+    }
+  };
+
   const filteredHistory = history.filter(item => {
     if (filter === 'all') return true;
     if (filter === 'yolo') return item.process === 'email';
@@ -70,13 +122,22 @@ export const HistoryPage = () => {
   });
 
   const handleResend = (item) => {
-    // Navigate to the appropriate form with pre-filled data
     if (item.process === 'email') {
-      navigate('/send/yolo');
+      navigate('/send/yolo', { state: { historyItem: item } });
     } else {
-      navigate('/send/detailed');
+      navigate('/send/detailed', { state: { historyItem: item } });
     }
   };
+
+  const handleCardClick = (item) => {
+    setExpandedId(expandedId === item.id ? null : item.id);
+  };
+
+  const loadMore = () => {
+    loadHistory(false);
+  };
+
+  const hasMore = offset < total;
 
   if (isLoading) {
     return (
@@ -113,12 +174,12 @@ export const HistoryPage = () => {
           </div>
         </motion.div>
 
-        {/* Filters & Actions */}
+        {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6"
+          className="flex items-center justify-between mb-6"
         >
           {/* Filter Tabs */}
           <div className="flex gap-2">
@@ -143,13 +204,10 @@ export const HistoryPage = () => {
             ))}
           </div>
 
-          {/* Clear All */}
-          {history.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearAllHistory}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear All
-            </Button>
-          )}
+          {/* Total count */}
+          <p className="text-sm text-navy-500">
+            {total} total records
+          </p>
         </motion.div>
 
         {/* History List */}
@@ -185,12 +243,14 @@ export const HistoryPage = () => {
                 transition={{ delay: index * 0.05 }}
               >
                 <Card 
-                  className={`transition-all ${expandedId === item.id ? 'ring-2 ring-brand-blue/30' : ''}`}
+                  className={`transition-all ${expandedId === item.id ? 'ring-2 ring-brand-blue/30' : ''} cursor-pointer`}
+                  onClick={() => handleCardClick(item)}
                 >
                   {/* Item Header */}
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {/* Process Type Badge */}
                         <span className={`
                           inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
                           ${item.process === 'email' 
@@ -198,27 +258,42 @@ export const HistoryPage = () => {
                             : 'bg-brand-blue/10 text-brand-blue'
                           }
                         `}>
-                          {item.process === 'email' ? (
-                            <>
-                              <Zap size={12} />
-                              YOLO
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles size={12} />
-                              Detailed
-                            </>
-                          )}
+                          {getProcessIcon(item.process)}
+                          {getProcessLabel(item.process)}
                         </span>
+
+                        {/* Success/Failure Badge */}
+                        {item.success ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            <CheckCircle size={12} />
+                            Sent
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                            <XCircle size={12} />
+                            Failed
+                          </span>
+                        )}
+
+                        {/* Duration */}
+                        <span className="inline-flex items-center gap-1 text-xs text-navy-400">
+                          <Clock size={12} />
+                          {formatDuration(item.duration_ms)}
+                        </span>
+
+                        {/* Date */}
                         <span className="text-xs text-navy-400 flex items-center gap-1">
                           <Calendar size={12} />
                           {formatDate(item.created_at)}
                         </span>
                       </div>
                       
+                      {/* Subject */}
                       <h3 className="font-medium text-navy-800 truncate">
-                        {item.subject}
+                        {item.subject || 'No subject'}
                       </h3>
+
+                      {/* Recipient */}
                       <p className="text-sm text-navy-500 truncate">
                         To: {item.to}
                       </p>
@@ -247,24 +322,21 @@ export const HistoryPage = () => {
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-4 pt-4 border-t border-navy-100"
                     >
-                      {/* Prompt */}
-                      <div className="mb-4">
-                        <p className="text-xs text-navy-400 mb-1">Your prompt:</p>
-                        <p className="text-sm text-navy-700 bg-navy-50 p-3 rounded-lg">
-                          {item.prompt}
-                        </p>
-                      </div>
-
-                      {/* Output Preview */}
-                      {item.output && (
-                        <div className="mb-4">
-                          <p className="text-xs text-navy-400 mb-1">Generated email:</p>
-                          <div 
-                            className="text-sm text-navy-700 bg-white border border-navy-200 p-3 rounded-lg max-h-48 overflow-y-auto"
-                            dangerouslySetInnerHTML={{ __html: item.output }}
-                          />
+                      {/* Error Message (if failed) */}
+                      {!item.success && item.error_message && (
+                        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                          <p className="text-xs text-red-600 font-medium mb-1">Error:</p>
+                          <p className="text-sm text-red-700">{item.error_message}</p>
                         </div>
                       )}
+
+                      {/* Prompt */}
+                      <div className="mb-4">
+                        <p className="text-xs text-navy-400 mb-1">Prompt:</p>
+                        <p className="text-sm text-navy-700 bg-navy-50 p-3 rounded-lg">
+                          {item.prompt || 'No prompt recorded'}
+                        </p>
+                      </div>
 
                       {/* Actions */}
                       <div className="flex gap-2">
@@ -276,21 +348,26 @@ export const HistoryPage = () => {
                           <RefreshCw className="w-4 h-4 mr-2" />
                           Resend
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteHistoryItem(item.id)}
-                          className="text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </Button>
                       </div>
                     </motion.div>
                   )}
                 </Card>
               </motion.div>
             ))}
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="flex justify-center pt-4">
+                <Button
+                  variant="secondary"
+                  onClick={loadMore}
+                  loading={isLoadingMore}
+                >
+                  <ChevronRight className="w-4 h-4 mr-2" />
+                  Load More
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

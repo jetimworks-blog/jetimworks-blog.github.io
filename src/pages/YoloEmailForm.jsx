@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Layout } from '../components/layout/Layout';
@@ -18,6 +18,7 @@ const steps = ['Recipient', 'Details', 'Send'];
 
 export const YoloEmailForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -27,6 +28,20 @@ export const YoloEmailForm = () => {
     prompt: '',
   });
   const [errors, setErrors] = useState({});
+
+  // Preload form data from history if available
+  useEffect(() => {
+    const historyData = location.state?.historyItem;
+    if (historyData) {
+      setFormData({
+        to: historyData.to || '',
+        subject: historyData.subject || '',
+        prompt: historyData.prompt || '',
+      });
+      // Clear the state so refreshing doesn't keep preloaded data
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,10 +104,10 @@ export const YoloEmailForm = () => {
 
     try {
       const payload = {
-        process: 'email',
+        process: 'gen-email',
         to: formData.to,
         subject: formData.subject,
-        html: formData.prompt, // Using prompt as HTML content
+        prompt: formData.prompt,
       };
 
       const response = await emailAPI.execute(payload);
@@ -122,8 +137,13 @@ export const YoloEmailForm = () => {
       }
     } catch (error) {
       clearInterval(stepInterval);
+      const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
       toast.error('Failed to send email', {
-        description: error.response?.data?.error || 'An unexpected error occurred.',
+        description: errorMessage,
+      });
+      // Navigate to result page with error
+      navigate('/result', {
+        state: { error: errorMessage }
       });
     } finally {
       setIsLoading(false);

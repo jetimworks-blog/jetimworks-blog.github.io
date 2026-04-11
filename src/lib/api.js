@@ -92,4 +92,10 @@ export const healthAPI = {
   check: () => apiClient.get('/health'),
 };
 
+// Email History API
+export const historyAPI = {
+  getAll: (limit = 20, offset = 0) => 
+    apiClient.get('/email-history', { params: { limit, offset } }),
+};
+
 export default apiClient;

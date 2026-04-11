@@ -13,8 +13,8 @@ export const EmailResult = () => {
   const { email, subject, to, mode, error } = location.state || {};
   const [copied, setCopied] = useState(false);
 
-  // Handle error state
-  if (error || !email) {
+  // Handle missing state or error - show error page
+  if (!email || error) {
     return (
       <Layout>
         <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
