@@ -19,42 +19,27 @@ export const validateRequired = (value, fieldName) => {
 
 export const getPasswordStrength = (password) => {
   let strength = 0;
-  const feedback = [];
+  const checks = {
+    length: password.length >= 8,
+    lowercase: /[a-z]/.test(password),
+    uppercase: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^a-zA-Z0-9]/.test(password),
+  };
 
-  if (password.length >= 8) {
-    strength += 1;
-  } else {
-    feedback.push('At least 8 characters');
-  }
+  if (checks.length) strength += 1;
+  if (checks.lowercase) strength += 1;
+  if (checks.uppercase) strength += 1;
+  if (checks.number) strength += 1;
+  if (checks.special) strength += 1;
 
-  if (/[a-z]/.test(password)) {
-    strength += 1;
-  } else {
-    feedback.push('A lowercase letter');
-  }
-
-  if (/[A-Z]/.test(password)) {
-    strength += 1;
-  } else {
-    feedback.push('An uppercase letter');
-  }
-
-  if (/[0-9]/.test(password)) {
-    strength += 1;
-  } else {
-    feedback.push('A number');
-  }
-
-  if (/[^a-zA-Z0-9]/.test(password)) {
-    strength += 1;
-  } else {
-    feedback.push('A special character');
-  }
+  const labels = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong', 'Perfect'];
+  const colors = ['red', 'orange', 'yellow', 'lime', 'green', 'green'];
 
   return {
-    strength, // 0-5
-    feedback,
-    label: ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'][Math.min(strength, 5)],
-    color: ['red', 'orange', 'yellow', 'lime', 'green'][Math.min(strength, 5)],
+    strength,
+    checks,
+    label: labels[Math.min(strength, 5)],
+    color: colors[Math.min(strength, 5)],
   };
 };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Layout } from '../components/layout/Layout';
@@ -7,12 +7,11 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { useAuth } from '../hooks/useAuth';
-import { validateEmail, validatePassword } from '../lib/validation';
+import { validateEmail } from '../lib/validation';
 import { Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
   
   const [formData, setFormData] = useState({
@@ -21,8 +20,6 @@ export const LoginPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-
-  const from = location.state?.from?.pathname || '/home';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,14 +32,12 @@ export const LoginPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    const emailValidation = validateEmail(formData.email);
-    if (!emailValidation) {
+    if (!validateEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    const passwordValidation = validatePassword(formData.password);
-    if (!passwordValidation.valid) {
-      newErrors.password = passwordValidation.message;
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
     }
 
     setErrors(newErrors);
@@ -62,13 +57,13 @@ export const LoginPage = () => {
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
-        toast.success('Welcome back!', {
-          description: 'You\'re now signed in. Let\'s craft some emails!',
+        toast.success('Welcome back! 👋', {
+          description: 'Ready to craft some emails?',
         });
-        navigate(from, { replace: true });
+        navigate('/home', { replace: true });
       } else {
         toast.error('Login failed', {
-          description: result.error || 'Please check your credentials and try again.',
+          description: result.error || 'Invalid email or password.',
         });
       }
     } catch (error) {
@@ -103,7 +98,7 @@ export const LoginPage = () => {
               Welcome Back
             </h1>
             <p className="text-navy-600">
-              Sign in to continue crafting amazing emails
+              Sign in to continue crafting
             </p>
           </div>
 
@@ -130,7 +125,7 @@ export const LoginPage = () => {
                   <Input
                     name="password"
                     type="password"
-                    placeholder="Your password"
+                    placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
                     error={errors.password}
@@ -140,14 +135,16 @@ export const LoginPage = () => {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                loading={isLoading}
-              >
-                <span>Sign In</span>
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  loading={isLoading}
+                >
+                  <span>Sign in</span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
             </form>
 
             {/* Divider */}
@@ -167,7 +164,7 @@ export const LoginPage = () => {
                 to="/register"
                 className="font-medium text-brand-blue hover:text-navy-700 transition-colors"
               >
-                Create one now
+                Create one
               </Link>
             </p>
           </Card>
@@ -175,7 +172,7 @@ export const LoginPage = () => {
           {/* Back to Home */}
           <div className="text-center mt-6">
             <Link
-              to="/"
+              to="/features"
               className="text-sm text-navy-400 hover:text-navy-600 transition-colors"
             >
               ← Back to home

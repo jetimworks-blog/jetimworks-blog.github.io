@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Layout } from '../components/layout/Layout';
 import { Button } from '../components/ui/Button';
@@ -9,6 +9,14 @@ import { Card } from '../components/ui/Card';
 import { useAuth } from '../hooks/useAuth';
 import { validateEmail, validatePassword, getPasswordStrength } from '../lib/validation';
 import { Mail, Lock, ArrowRight, Sparkles, Check, X } from 'lucide-react';
+
+const passwordRequirements = [
+  { key: 'length', label: 'At least 8 characters' },
+  { key: 'lowercase', label: 'A lowercase letter' },
+  { key: 'uppercase', label: 'An uppercase letter' },
+  { key: 'number', label: 'A number' },
+  { key: 'special', label: 'A special character' },
+];
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -156,36 +164,38 @@ export const RegisterPage = () => {
                 </div>
 
                 {/* Password Strength Indicator */}
-                {showPasswordStrength && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2"
-                  >
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div
-                          key={i}
-                          className={`h-1 flex-1 rounded-full transition-colors ${
-                            i <= passwordStrength.strength
-                              ? strengthColors[passwordStrength.color]
-                              : 'bg-navy-100'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <p className={`text-xs ${
-                      passwordStrength.color === 'green' ? 'text-green-600' :
-                      passwordStrength.color === 'lime' ? 'text-lime-600' :
-                      passwordStrength.color === 'yellow' ? 'text-yellow-600' :
-                      passwordStrength.color === 'orange' ? 'text-orange-600' :
-                      'text-red-600'
-                    }`}>
-                      {passwordStrength.label} ({passwordStrength.strength}/5)
-                    </p>
-                  </motion.div>
-                )}
+                <AnimatePresence>
+                  {showPasswordStrength && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-2"
+                    >
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div
+                            key={i}
+                            className={`h-1 flex-1 rounded-full transition-colors ${
+                              i <= passwordStrength.strength
+                                ? strengthColors[passwordStrength.color]
+                                : 'bg-navy-100'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className={`text-xs ${
+                        passwordStrength.color === 'green' ? 'text-green-600' :
+                        passwordStrength.color === 'lime' ? 'text-lime-600' :
+                        passwordStrength.color === 'yellow' ? 'text-yellow-600' :
+                        passwordStrength.color === 'orange' ? 'text-orange-600' :
+                        'text-red-600'
+                      }`}>
+                        {passwordStrength.label} ({passwordStrength.strength}/5)
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-navy-400" />
@@ -202,32 +212,37 @@ export const RegisterPage = () => {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                loading={isLoading}
-              >
-                <span>Create Account</span>
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  loading={isLoading}
+                >
+                  <span>Create Account</span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
             </form>
 
             {/* Password Requirements */}
             <div className="mt-4 p-4 bg-navy-50 rounded-lg">
               <p className="text-xs font-medium text-navy-500 mb-2">Password requirements:</p>
               <ul className="space-y-1">
-                {passwordStrength.feedback.map((item, i) => (
-                  <li key={i} className="text-xs text-navy-400 flex items-center gap-2">
-                    <X size={12} className="text-red-400" />
-                    {item}
+                {passwordRequirements.map((req) => (
+                  <li 
+                    key={req.key} 
+                    className={`text-xs flex items-center gap-2 ${
+                      passwordStrength.checks?.[req.key] ? 'text-green-600' : 'text-navy-400'
+                    }`}
+                  >
+                    {passwordStrength.checks?.[req.key] ? (
+                      <Check size={12} />
+                    ) : (
+                      <X size={12} className="text-red-400" />
+                    )}
+                    {req.label}
                   </li>
                 ))}
-                {passwordStrength.strength >= 1 && (
-                  <li className="text-xs text-green-600 flex items-center gap-2">
-                    <Check size={12} />
-                    At least 8 characters
-                  </li>
-                )}
               </ul>
             </div>
 
@@ -256,7 +271,7 @@ export const RegisterPage = () => {
           {/* Back to Home */}
           <div className="text-center mt-6">
             <Link
-              to="/"
+              to="/features"
               className="text-sm text-navy-400 hover:text-navy-600 transition-colors"
             >
               ← Back to home
