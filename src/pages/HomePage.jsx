@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Layout } from '../components/layout/Layout';
 import { Card } from '../components/ui/Card';
@@ -6,10 +6,28 @@ import { Button } from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import { Zap, Sparkles, Clock, AlertTriangle, ChevronRight, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { configAPI } from '../lib/api';
 
 export const HomePage = () => {
   const { user } = useAuth();
   const [showApiKeyBanner, setShowApiKeyBanner] = useState(true);
+  const [hasApiKey, setHasApiKey] = useState(false);
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const loadConfig = async () => {
+    try {
+      const response = await configAPI.get();
+      setHasApiKey(response.data.has_resend_key || false);
+      if (response.data.has_resend_key) {
+        setShowApiKeyBanner(false);
+      }
+    } catch (error) {
+      console.error('Failed to load config:', error);
+    }
+  };
 
   const emailOptions = [
     {
