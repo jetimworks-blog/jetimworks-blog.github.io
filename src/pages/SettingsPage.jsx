@@ -6,15 +6,21 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { configAPI } from '../lib/api';
-import { Settings, Key, Eye, EyeOff, CheckCircle, AlertTriangle, ExternalLink } from 'lucide-react';
+import { configAPI, authAPI } from '../lib/api';
+import { Settings, Key, Eye, EyeOff, CheckCircle, AlertTriangle, ExternalLink, Trash2 } from 'lucide-react';
 
 export const SettingsPage = () => {
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [showDeleteConfigModal, setShowDeleteConfigModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   useEffect(() => {
     loadConfig();
@@ -51,6 +57,49 @@ export const SettingsPage = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteConfig = async () => {
+    setIsDeleting(true);
+    try {
+      await configAPI.delete();
+      setHasApiKey(false);
+      setShowDeleteConfigModal(false);
+      toast.success('API key deleted', {
+        description: 'Your Resend API key has been removed.',
+      });
+    } catch (error) {
+      toast.error('Failed to delete API key', {
+        description: error.response?.data?.error || 'Something went wrong.',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      toast.error('Please enter your password');
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      await authAPI.deleteAccount(deletePassword);
+      // Clear local storage and redirect
+      localStorage.clear();
+      toast.success('Account deleted', {
+        description: 'Your account has been permanently deleted.',
+      });
+      window.location.href = '/features';
+    } catch (error) {
+      toast.error('Failed to delete account', {
+        description: error.response?.data?.error || 'Something went wrong.',
+      });
+    } finally {
+      setIsDeletingAccount(false);
+      setDeletePassword('');
     }
   };
 
@@ -162,6 +211,17 @@ export const SettingsPage = () => {
               >
                 {hasApiKey ? 'Update API Key' : 'Save API Key'}
               </Button>
+
+              {hasApiKey && (
+                <Button
+                  variant="ghost"
+                  className="w-full text-red-600 hover:bg-red-50"
+                  onClick={() => setShowDeleteConfigModal(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete API Key
+                </Button>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -217,7 +277,121 @@ export const SettingsPage = () => {
             </div>
           </Card>
         </motion.div>
+
+        {/* Danger Zone */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-6"
+        >
+          <Card className="border-red-200 bg-red-50">
+            <h3 className="font-serif font-bold text-red-800 mb-2">
+              Danger Zone
+            </h3>
+            <p className="text-sm text-red-600 mb-4">
+              Once you delete your account, there is no going back. All your data will be permanently deleted.
+            </p>
+            <Button
+              variant="danger"
+              onClick={() => setShowDeleteAccountModal(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Account
+            </Button>
+          </Card>
+        </motion.div>
       </div>
+
+      {/* Delete Config Modal */}
+      {showDeleteConfigModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl"
+          >
+            <h3 className="text-lg font-serif font-bold text-navy-900 mb-2">
+              Delete API Key?
+            </h3>
+            <p className="text-navy-600 mb-6">
+              This will remove your Resend API key from our system. You can add it again later.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeleteConfigModal(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteConfig}
+                loading={isDeleting}
+              >
+                Delete
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteAccountModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl"
+          >
+            <h3 className="text-lg font-serif font-bold text-red-900 mb-2">
+              Delete Account?
+            </h3>
+            <p className="text-navy-600 mb-4">
+              This action cannot be undone. All your data, including your API key and email history, will be permanently deleted.
+            </p>
+            <p className="text-sm text-navy-500 mb-4">
+              Please enter your password to confirm.
+            </p>
+            <div className="relative mb-6">
+              <Input
+                type={showDeletePassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                className="pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowDeletePassword(!showDeletePassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-600"
+              >
+                {showDeletePassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteAccountModal(false);
+                  setDeletePassword('');
+                }}
+                disabled={isDeletingAccount}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteAccount}
+                loading={isDeletingAccount}
+              >
+                Delete Account
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </Layout>
   );
 };

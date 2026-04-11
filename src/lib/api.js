@@ -71,12 +71,14 @@ export const authAPI = {
   logout: () => apiClient.post('/auth/logout'),
   me: () => apiClient.get('/auth/me'),
   refresh: (refreshToken) => apiClient.post('/auth/refresh', { refresh_token: refreshToken }),
+  deleteAccount: (password) => apiClient.delete('/auth/account', { data: { password } }),
 };
 
 // Config API
 export const configAPI = {
   get: () => apiClient.get('/config'),
   set: (data) => apiClient.put('/config', data),
+  delete: () => apiClient.delete('/config'),
 };
 
 // Email API
