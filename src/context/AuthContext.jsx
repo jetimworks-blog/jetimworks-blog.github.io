@@ -1,0 +1,101 @@
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { authAPI } from '../lib/api';
+import { getAuthState, setAuthState, clearAuthState, setStoredToken, setStoredRefreshToken, setStoredUser, clearStoredUser } from '../lib/auth';
+
+export const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize auth state from localStorage
+  useEffect(() => {
+    const { user: storedUser, isAuthenticated: storedAuth } = getAuthState();
+    if (storedAuth && storedUser) {
+      setUser(storedUser);
+      setIsAuthenticated(true);
+    }
+    setIsLoading(false);
+  }, []);
+
+  const login = useCallback(async (email, password) => {
+    try {
+      const response = await authAPI.login({ email, password });
+      const { user: userData, access_token, refresh_token } = response.data;
+
+      setStoredToken(access_token);
+      setStoredRefreshToken(refresh_token);
+      setStoredUser(userData);
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      return { success: true, user: userData };
+    } catch (error) {
+      const message = error.response?.data?.error || 'Login failed. Please try again.';
+      return { success: false, error: message };
+    }
+  }, []);
+
+  const register = useCallback(async (email, password) => {
+    try {
+      const response = await authAPI.register({ email, password });
+      const { user: userData, access_token, refresh_token } = response.data;
+
+      setStoredToken(access_token);
+      setStoredRefreshToken(refresh_token);
+      setStoredUser(userData);
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      return { success: true, user: userData };
+    } catch (error) {
+      const message = error.response?.data?.error || 'Registration failed. Please try again.';
+      return { success: false, error: message };
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await authAPI.logout();
+    } catch {
+      // Ignore logout errors, clear local state anyway
+    } finally {
+      clearAuthState();
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await authAPI.me();
+      const userData = response.data;
+      setStoredUser(userData);
+      setUser(userData);
+      return { success: true, user: userData };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  const value = {
+    user,
+    isAuthenticated,
+    isLoading,
+    login,
+    register,
+    logout,
+    fetchUser,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
