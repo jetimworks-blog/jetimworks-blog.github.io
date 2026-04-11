@@ -4,26 +4,51 @@ import { toast } from 'sonner';
 import { Layout } from '../components/layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Copy, Check, Mail, Sparkles, ArrowLeft, Home } from 'lucide-react';
+import { Copy, Check, Mail, Sparkles, ArrowLeft, Home, AlertCircle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 export const EmailResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { email, subject, to, mode } = location.state || {};
+  const { email, subject, to, mode, error } = location.state || {};
   const [copied, setCopied] = useState(false);
 
-  if (!email) {
+  // Handle error state
+  if (error || !email) {
     return (
       <Layout>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <Card>
-            <p className="text-navy-600 mb-4">No email content found. Let's create one!</p>
-            <Button onClick={() => navigate('/home')}>
-              <Home className="w-4 h-4 mr-2" />
-              Go Home
-            </Button>
-          </Card>
+        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card variant="bordered" className="max-w-md text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <h2 className="text-xl font-serif font-bold text-navy-900 mb-2">
+                Something went wrong
+              </h2>
+              <p className="text-navy-600 mb-6">
+                {error || 'We couldn\'t craft your email. Please try again.'}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate(-1)}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Go Back
+                </Button>
+                <Button
+                  onClick={() => navigate('/home')}
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Go Home
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
         </div>
       </Layout>
     );

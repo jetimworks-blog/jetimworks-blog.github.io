@@ -146,14 +146,22 @@ export const DetailedEmailForm = () => {
           }
         });
       } else {
+        const errorMsg = response.data.error || 'Something went wrong. Please try again.';
         toast.error('Crafting failed', {
-          description: response.data.error || 'Something went wrong. Please try again.',
+          description: errorMsg,
+        });
+        navigate('/result', {
+          state: { error: errorMsg }
         });
       }
     } catch (error) {
       clearInterval(stepInterval);
+      const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
       toast.error('Failed to craft email', {
-        description: error.response?.data?.error || 'An unexpected error occurred.',
+        description: errorMessage,
+      });
+      navigate('/result', {
+        state: { error: errorMessage }
       });
     } finally {
       setIsLoading(false);
@@ -445,7 +453,7 @@ export const DetailedEmailForm = () => {
               {formData.keyMessage && (
                 <div className="p-3 bg-navy-50 rounded-lg">
                   <p className="text-xs text-navy-500 mb-1">Key message</p>
-                  <p className="text-sm text-navy-800">{formData.keyMessage}</p>
+                  <p className="text-sm font-navy-800">{formData.keyMessage}</p>
                 </div>
               )}
               
