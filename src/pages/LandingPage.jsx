@@ -4,6 +4,7 @@ import { Layout } from '../components/layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Zap, Sparkles, Clock, Shield } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 const features = [
   {
@@ -35,6 +36,8 @@ const fadeInUp = {
 };
 
 export const LandingPage = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Layout showFooter={false}>
       {/* Hero Section */}
@@ -84,16 +87,26 @@ export const LandingPage = () => {
                 transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
               >
-                <Link to="/register">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Start Crafting for Free
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-                    Sign In
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <Link to="/home">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/register">
+                      <Button size="lg" className="w-full sm:w-auto">
+                        Start Crafting for Free
+                      </Button>
+                    </Link>
+                    <Link to="/login">
+                      <Button variant="secondary" size="lg" className="w-full sm:w-auto">
+                        Sign In
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </motion.div>
 
               <motion.p
@@ -225,7 +238,7 @@ export const LandingPage = () => {
               Ready to Transform Your Email Game?
             </h2>
             <p className="text-xl text-navy-200 mb-8">
-              Join thousands of professionals who write better emails in less time.
+              By Jetimworks
             </p>
             <Link to="/register">
               <Button 

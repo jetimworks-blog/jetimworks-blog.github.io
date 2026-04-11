@@ -19,9 +19,14 @@ function App() {
         <ToastProvider />
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* Landing Page */}
+          <Route path="/features" element={<LandingPage />} />
+
+          {/* Root: redirect based on auth status */}
+          <Route path="/" element={<Navigate to="/features" replace />} />
 
           {/* Protected Routes */}
           <Route
@@ -74,7 +79,7 @@ function App() {
           />
 
           {/* Catch-all redirect */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/features" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
