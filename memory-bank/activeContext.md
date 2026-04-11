@@ -13,6 +13,15 @@
 2. Fixed AuthContext export
    - Added `export` keyword to AuthContext
 
+3. Fixed UI issues (April 11, 2026):
+   - Button centering on LoginPage and RegisterPage
+   - Password strength counter color at 5/5 (now green, not disappearing)
+   - Password requirements now always visible with green checkmarks
+   - Moved "By Jetimworks" to footer copyright section
+
+4. Fixed EmailResult page error handling
+   - Now shows proper error state with retry options when API fails
+
 ## Current Focus
 
 - Application is built and ready for testing
@@ -29,3 +38,4 @@
 - Always use `export const` for context exports
 - TailwindCSS v4 uses `@theme` directive (not tailwind.config.js)
 - No PostCSS config needed when using @tailwindcss/vite
+- Password strength uses `checks` object with: length, lowercase, uppercase, number, special
