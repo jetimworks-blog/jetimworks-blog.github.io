@@ -138,7 +138,6 @@ export const LoginPage = () => {
               <div className="flex justify-center">
                 <Button
                   type="submit"
-                  className="w-full"
                   loading={isLoading}
                 >
                   <span>Sign in</span>

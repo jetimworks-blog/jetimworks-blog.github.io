@@ -119,7 +119,7 @@ export const HomePage = () => {
                     {/* Background Gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${option.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
                     
-                    <div className="relative z-10">
+                    <div className="relative z-10 flex flex-col h-full">
                       {/* Icon */}
                       <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${option.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                         <Icon className="w-8 h-8 text-white" />
@@ -137,8 +137,8 @@ export const HomePage = () => {
                         {option.description}
                       </p>
 
-                      {/* CTA */}
-                      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br ${option.color} text-white font-medium group-hover:shadow-lg transition-shadow duration-300`}>
+                      {/* CTA - pushed to bottom */}
+                      <div className={`mt-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br ${option.color} text-white font-medium group-hover:shadow-lg transition-shadow duration-300 w-fit`}>
                         <Mail size={18} />
                         {option.cta}
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

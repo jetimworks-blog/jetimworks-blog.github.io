@@ -215,7 +215,6 @@ export const RegisterPage = () => {
               <div className="flex justify-center">
                 <Button
                   type="submit"
-                  className="w-full"
                   loading={isLoading}
                 >
                   <span>Create Account</span>
