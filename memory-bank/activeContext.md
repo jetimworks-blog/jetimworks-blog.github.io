@@ -22,6 +22,19 @@
 4. Fixed EmailResult page error handling
    - Now shows proper error state with retry options when API fails
 
+5. Added Sender Configuration (April 11, 2026):
+   - Added `validateSenderEmail()` to validation.js
+   - Added Sender Information section to SettingsPage
+   - Includes from_email and from_name fields
+   - Independent "Save Sender Information" button
+   - Backend API: POST/GET /v1/config supports from_email/from_name
+
+6. Fixed Email Send Success Handling (April 11, 2026):
+   - Fixed YoloEmailForm and DetailedEmailForm to handle empty output
+   - API returns `{"success": true, "output": ""}` on successful send
+   - Now shows "Email sent!" toast and navigates to result page
+   - Falls back to "Email sent successfully!" when output is empty
+
 ## Current Focus
 
 - Application is built and ready for testing
@@ -32,6 +45,7 @@
 1. Test authentication flow
 2. Verify email composition modes work
 3. Test history and settings pages
+4. Test sender configuration persists
 
 ## Important Patterns
 
@@ -39,3 +53,5 @@
 - TailwindCSS v4 uses `@theme` directive (not tailwind.config.js)
 - No PostCSS config needed when using @tailwindcss/vite
 - Password strength uses `checks` object with: length, lowercase, uppercase, number, special
+- Email API success: `response.data.success === true || response.status === 200`
+- Sender config payload: `{ from_email, from_name }` (optional fields)

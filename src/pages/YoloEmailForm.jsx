@@ -99,25 +99,30 @@ export const YoloEmailForm = () => {
       
       clearInterval(stepInterval);
       
-      if (response.data.success) {
-        toast.success('Email crafted! 🎉', {
-          description: 'Your email has been generated. Check it out below.',
+      // Check if email was sent successfully
+      // success: true with HTTP 200 indicates success
+      // Note: output may be empty if email was directly sent
+      const isSuccess = response.data.success === true || response.status === 200;
+      
+      if (isSuccess) {
+        toast.success('Email sent! 🎉', {
+          description: `Your email has been delivered to ${formData.to}.`,
         });
         navigate('/result', { 
           state: { 
-            email: response.data.output,
+            email: response.data.output || 'Email sent successfully!',
             subject: formData.subject,
             to: formData.to,
           }
         });
       } else {
         toast.error('Oops! Something went wrong', {
-          description: response.data.error || 'Failed to craft email. Please try again.',
+          description: response.data.error || 'Failed to send email. Please try again.',
         });
       }
     } catch (error) {
       clearInterval(stepInterval);
-      toast.error('Failed to craft email', {
+      toast.error('Failed to send email', {
         description: error.response?.data?.error || 'An unexpected error occurred.',
       });
     } finally {

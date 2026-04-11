@@ -7,7 +7,8 @@ import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { configAPI, authAPI } from '../lib/api';
-import { Settings, Key, Eye, EyeOff, CheckCircle, AlertTriangle, ExternalLink, Trash2 } from 'lucide-react';
+import { validateSenderEmail } from '../lib/validation';
+import { Settings, Key, Eye, EyeOff, CheckCircle, AlertTriangle, ExternalLink, Trash2, User, Mail } from 'lucide-react';
 
 export const SettingsPage = () => {
   const [apiKey, setApiKey] = useState('');
@@ -21,6 +22,10 @@ export const SettingsPage = () => {
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  // Sender information
+  const [fromEmail, setFromEmail] = useState('');
+  const [fromName, setFromName] = useState('');
+  const [senderError, setSenderError] = useState('');
 
   useEffect(() => {
     loadConfig();
@@ -30,6 +35,9 @@ export const SettingsPage = () => {
     try {
       const response = await configAPI.get();
       setHasApiKey(response.data.has_resend_key || false);
+      // Load sender information
+      setFromEmail(response.data.from_email || '');
+      setFromName(response.data.from_name || '');
     } catch (error) {
       console.error('Failed to load config:', error);
     } finally {
@@ -43,17 +51,89 @@ export const SettingsPage = () => {
       return;
     }
 
+    // Validate sender email if provided
+    if (fromEmail.trim()) {
+      const emailValidation = validateSenderEmail(fromEmail);
+      if (!emailValidation.valid) {
+        setSenderError(emailValidation.message);
+        return;
+      }
+    }
+
     setIsSaving(true);
     try {
-      await configAPI.set({ resend_api_key: apiKey.trim() });
+      const payload = { resend_api_key: apiKey.trim() };
+      // Include sender info only if provided
+      if (fromEmail.trim()) {
+        payload.from_email = fromEmail.trim();
+      }
+      if (fromName.trim()) {
+        payload.from_name = fromName.trim();
+      }
+      await configAPI.set(payload);
       setHasApiKey(true);
       setApiKey('');
-      toast.success('API key saved!', {
-        description: 'Your Resend API key has been securely stored.',
+      setSenderError('');
+      toast.success('Settings saved!', {
+        description: 'Your configuration has been updated.',
       });
     } catch (error) {
-      toast.error('Failed to save API key', {
-        description: error.response?.data?.error || 'Something went wrong.',
+      // Handle nested error structure: { error: { code, message } }
+      const errorData = error.response?.data;
+      let errorMessage = 'Something went wrong.';
+      
+      if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
+      } else if (errorData?.error && typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      }
+      
+      toast.error('Failed to save settings', {
+        description: errorMessage,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveSender = async () => {
+    // Validate sender email if provided
+    if (fromEmail.trim()) {
+      const emailValidation = validateSenderEmail(fromEmail);
+      if (!emailValidation.valid) {
+        setSenderError(emailValidation.message);
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    try {
+      const payload = {};
+      // Include sender info only if provided
+      if (fromEmail.trim()) {
+        payload.from_email = fromEmail.trim();
+      }
+      if (fromName.trim()) {
+        payload.from_name = fromName.trim();
+      }
+      await configAPI.set(payload);
+      setSenderError('');
+      toast.success('Sender information saved!', {
+        description: 'Your sender details have been updated.',
+      });
+    } catch (error) {
+      // Handle nested error structure: { error: { code, message } }
+      const errorData = error.response?.data;
+      let errorMessage = 'Something went wrong.';
+      
+      if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
+      } else if (errorData?.error && typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      }
+      
+      toast.error('Failed to save sender information', {
+        description: errorMessage,
       });
     } finally {
       setIsSaving(false);
@@ -70,8 +150,18 @@ export const SettingsPage = () => {
         description: 'Your Resend API key has been removed.',
       });
     } catch (error) {
+      // Handle nested error structure: { error: { code, message } }
+      const errorData = error.response?.data;
+      let errorMessage = 'Something went wrong.';
+      
+      if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
+      } else if (errorData?.error && typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      }
+      
       toast.error('Failed to delete API key', {
-        description: error.response?.data?.error || 'Something went wrong.',
+        description: errorMessage,
       });
     } finally {
       setIsDeleting(false);
@@ -94,8 +184,18 @@ export const SettingsPage = () => {
       });
       window.location.href = '/features';
     } catch (error) {
+      // Handle nested error structure: { error: { code, message } }
+      const errorData = error.response?.data;
+      let errorMessage = 'Something went wrong.';
+      
+      if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
+      } else if (errorData?.error && typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      }
+      
       toast.error('Failed to delete account', {
-        description: error.response?.data?.error || 'Something went wrong.',
+        description: errorMessage,
       });
     } finally {
       setIsDeletingAccount(false);
@@ -222,6 +322,70 @@ export const SettingsPage = () => {
                   Delete API Key
                 </Button>
               )}
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Sender Information Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mt-6"
+        >
+          <Card variant="bordered">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-brand-blue/10 rounded-lg flex items-center justify-center">
+                <User className="w-5 h-5 text-brand-blue" />
+              </div>
+              <div>
+                <h2 className="text-lg font-serif font-bold text-navy-800">
+                  Sender Information
+                </h2>
+                <p className="text-sm text-navy-500">
+                  Customize how your emails appear to recipients
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-navy-50 border border-navy-200 rounded-lg p-3 mb-4">
+              <div className="flex items-start gap-2">
+                <Mail className="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-navy-600">
+                  If not set, emails will use your account email and "Anonymous" as the sender name.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <Input
+                type="email"
+                label="Sender Email"
+                placeholder="sender@example.com"
+                value={fromEmail}
+                onChange={(e) => {
+                  setFromEmail(e.target.value);
+                  if (senderError) setSenderError('');
+                }}
+                error={senderError}
+              />
+
+              <Input
+                type="text"
+                label="Sender Name"
+                placeholder="Sender Name"
+                value={fromName}
+                onChange={(e) => setFromName(e.target.value)}
+              />
+
+              <Button
+                onClick={handleSaveSender}
+                loading={isSaving}
+                disabled={!fromEmail.trim() && !fromName.trim()}
+                className="w-full"
+              >
+                Save Sender Information
+              </Button>
             </div>
           </Card>
         </motion.div>

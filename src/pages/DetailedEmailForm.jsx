@@ -133,13 +133,18 @@ export const DetailedEmailForm = () => {
       
       clearInterval(stepInterval);
       
-      if (response.data.success) {
-        toast.success('Email crafted with care! ✨', {
-          description: 'Your meticulously crafted email is ready.',
+      // Check if email was sent successfully
+      // success: true with HTTP 200 indicates success
+      // Note: output may be empty if email was directly sent
+      const isSuccess = response.data.success === true || response.status === 200;
+      
+      if (isSuccess) {
+        toast.success('Email sent! ✨', {
+          description: `Your email has been delivered to ${formData.to}.`,
         });
         navigate('/result', { 
           state: { 
-            email: response.data.output,
+            email: response.data.output || 'Email sent successfully!',
             subject: formData.subject,
             to: formData.to,
             mode: 'detailed',

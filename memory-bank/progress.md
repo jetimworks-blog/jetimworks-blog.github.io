@@ -10,9 +10,11 @@
 ✅ Detailed email form (multi-step wizard)
 ✅ Email result preview with error handling
 ✅ History page with filtering
-✅ Settings page
+✅ Settings page with sender configuration
 ✅ Build passes successfully
 ✅ UI fixes (button centering, password strength display)
+✅ Sender email/name configuration (from_email, from_name)
+✅ Fixed email send success handling (empty output = success)
 
 ## What's Left
 
@@ -21,7 +23,7 @@
 
 ## Known Issues
 
-- None at this time
+- Pre-existing lint warnings in unused motion imports (Navbar.jsx, Button.jsx, etc.)
 
 ## Build Output
 
@@ -35,7 +37,8 @@
 |------|---------|
 | src/lib/api.js | Axios client with JWT interceptors |
 | src/context/AuthContext.jsx | Auth state management |
-| src/pages/YoloEmailForm.jsx | Quick email form |
-| src/pages/DetailedEmailForm.jsx | Detailed email wizard |
+| src/pages/YoloEmailForm.jsx | Quick email form (process: email) |
+| src/pages/DetailedEmailForm.jsx | Detailed email wizard (process: gen-email) |
 | src/pages/EmailResult.jsx | Email result with error handling |
-| src/lib/validation.js | Validation utils (password strength with checks object) |
+| src/pages/SettingsPage.jsx | API key + sender configuration |
+| src/lib/validation.js | Validation utils |

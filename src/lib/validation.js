@@ -3,6 +3,18 @@ export const validateEmail = (email) => {
   return emailRegex.test(email);
 };
 
+export const validateSenderEmail = (email) => {
+  // Optional field - if empty, it's valid
+  if (!email || email.trim() === '') {
+    return { valid: true, message: '' };
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { valid: false, message: 'Please enter a valid email address' };
+  }
+  return { valid: true, message: '' };
+};
+
 export const validatePassword = (password) => {
   if (!password || password.length < 8) {
     return { valid: false, message: 'Password must be at least 8 characters' };

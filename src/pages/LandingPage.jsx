@@ -237,9 +237,6 @@ export const LandingPage = () => {
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4">
               Ready to Transform Your Email Game?
             </h2>
-            <p className="text-xl text-navy-200 mb-8">
-              By Jetimworks
-            </p>
             <Link to="/register">
               <Button 
                 variant="secondary" 

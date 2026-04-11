@@ -32,7 +32,28 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: userData };
     } catch (error) {
-      const message = error.response?.data?.error || 'Login failed. Please try again.';
+      // Handle different error scenarios
+      let message = 'Login failed. Please try again.';
+      
+      if (error.response) {
+        // Server responded with an error status (4xx, 5xx)
+        const errorData = error.response.data;
+        
+        // Handle nested error structure: { error: { code, message } }
+        if (errorData?.error?.message && errorData.error.message.trim()) {
+          message = errorData.error.message;
+        } else if (errorData?.error && typeof errorData.error === 'string' && errorData.error.trim()) {
+          message = errorData.error;
+        } else if (error.response.status === 401) {
+          message = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.response.status === 429) {
+          message = 'Too many attempts. Please try again later.';
+        }
+      } else if (error.request) {
+        // Network error - request was made but no response received
+        message = 'Unable to connect to server. Please check your internet connection.';
+      }
+      
       return { success: false, error: message };
     }
   }, []);
@@ -50,7 +71,28 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: userData };
     } catch (error) {
-      const message = error.response?.data?.error || 'Registration failed. Please try again.';
+      // Handle different error scenarios
+      let message = 'Registration failed. Please try again.';
+      
+      if (error.response) {
+        // Server responded with an error status (4xx, 5xx)
+        const errorData = error.response.data;
+        
+        // Handle nested error structure: { error: { code, message } }
+        if (errorData?.error?.message && errorData.error.message.trim()) {
+          message = errorData.error.message;
+        } else if (errorData?.error && typeof errorData.error === 'string' && errorData.error.trim()) {
+          message = errorData.error;
+        } else if (error.response.status === 409) {
+          message = 'An account with this email already exists.';
+        } else if (error.response.status === 429) {
+          message = 'Too many attempts. Please try again later.';
+        }
+      } else if (error.request) {
+        // Network error - request was made but no response received
+        message = 'Unable to connect to server. Please check your internet connection.';
+      }
+      
       return { success: false, error: message };
     }
   }, []);
