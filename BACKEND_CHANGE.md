@@ -1,115 +1,78 @@
-# Backend Changes Summary (Recent Commits)
+# Backend Change Summary
 
-The following backend changes need to be implemented in the frontend:
+## Commit: fcb1c63
+**Feature:** Split execute endpoint into preview and confirm for two-step email workflow
 
-## 1. Config Endpoint Updates
+## Endpoint Changes
 
-### PUT /config Payload Changes
-The `resend_api_key` field is now **optional** (previously required):
-```json
-{
-  "resend_api_key": "re_xxxxx",  // Optional - can be empty or omitted
-  "from_email": "sender@example.com",  // NEW - optional sender email
-  "from_name": "Sender Name"  // NEW - optional sender name
-}
-```
+### New Endpoints
 
-### GET /config Response Changes
-Response now includes sender info:
-```json
-{
-  "id": "uuid",
-  "has_resend_key": true,
-  "from_email": "sender@example.com",  // NEW
-  "from_name": "Sender Name",  // NEW
-  "updated_at": "2024-01-15T10:30:00Z"
-}
-```
+#### 1. `POST /app/execute` (Preview)
+- **Purpose:** Generate HTML email preview without sending
+- **Process used:** `gen`
+- **Request payload:**
+  ```json
+  {
+    "process": "gen",
+    "prompt": "string (required)"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "output": "string (generated HTML)",
+    "error": ""
+  }
+  ```
+- **Validation:** 
+  - `prompt` is required
+  - `html` and `html_file` are NOT allowed for preview
 
-### DELETE /config (NEW ENDPOINT)
-- **Method**: DELETE
-- **Path**: `/config`
-- **Auth**: Required (Bearer token)
-- **Response**: Returns error with message `"config_deleted"`
+#### 2. `POST /app/execute/confirm` (Confirm)
+- **Purpose:** Send email with pre-generated HTML
+- **Process used:** `email`
+- **Request payload:**
+  ```json
+  {
+    "process": "email",
+    "to": "string (required)",
+    "subject": "string (required)",
+    "html": "string (required - pre-generated HTML)",
+    "from_email": "string (optional)",
+    "from_name": "string (optional)"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "output": "string",
+    "error": ""
+  }
+  ```
+- **Validation:**
+  - `to`, `subject`, and `html` are required
+  - `prompt` is NOT allowed (use pre-generated HTML)
 
-## 2. Account Deletion
+### Legacy Endpoint
+- `POST /app/execute` with other processes (`email`, `chat`, `gen-email`) still works as before
 
-### DELETE /auth/account (NEW ENDPOINT)
-- **Method**: DELETE
-- **Path**: `/auth/account`
-- **Auth**: Required (Bearer token)
-- **Request Body**:
-```json
-{
-  "password": "user's current password"
-}
-```
-- **Success Response**: Error with message `"account_deleted"`
+## Data Model Changes
 
-## 3. Email History Endpoint
+### EmailHistory
+- **New field:** `generated_html` - Stores the generated HTML content
 
-### GET /email-history (NEW ENDPOINT)
-- **Method**: GET
-- **Path**: `/email-history`
-- **Auth**: Required (Bearer token)
-- **Query Parameters**:
-  - `limit` (optional, default: 20, max: 100)
-  - `offset` (optional, default: 0)
-- **Response**:
-```json
-{
-  "data": [
-    {
-      "id": "uuid",
-      "process": "email",  // email, chat, gen, gen-email
-      "to": "recipient@example.com",
-      "subject": "Email Subject",
-      "prompt": "Prompt used for generation",
-      "success": true,
-      "error_message": null,  // only present on failures
-      "duration_ms": 1234,
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "total": 50,
-  "limit": 20,
-  "offset": 0
-}
-```
+### EmailHistoryResponse
+- **New field:** `generated_html` - Included in API responses
 
-### Privacy Note
-Email history does **NOT** store actual email content (HTML/text) - only metadata for privacy.
+## Error Messages
+- `html_not_allowed`: "HTML content should not be provided for preview. Use the prompt to generate HTML."
+- `prompt_not_allowed`: "Prompt should not be provided when sending with pre-generated HTML."
 
-## 4. App Execute Fallback Logic
-
-When executing processes via `POST /app/execute`, the backend now applies fallback logic:
-
-- **from_email**: 
-  - Uses payload `from_email` if provided
-  - Falls back to config `from_email` if set
-  - Falls back to user's registered email
-  
-- **from_name**:
-  - Uses payload `from_name` if provided
-  - Falls back to config `from_name` if set
-  - Falls back to "Anonymous"
-
-This means the frontend doesn't need to explicitly pass these values if defaults are acceptable.
-
-## Required Frontend Changes
-
-1. **Config Form**:
-   - Make `resend_api_key` optional
-   - Add `from_email` and `from_name` input fields
-
-2. **Account Settings**:
-   - Add "Delete Account" button with password confirmation modal
-   - Send DELETE to `/auth/account` with `{ "password": "..." }`
-
-3. **Email History View**:
-   - Create new page/section for viewing email history
-   - Implement pagination with limit/offset query params
-   - Display execution metadata (no content)
-
-4. **Config Response Handling**:
-   - Update to handle `has_resend_key`, `from_email`, `from_name` fields
+## Frontend Changes Required
+1. Update email workflow to use two-step approach:
+   - Step 1: Call `POST /app/execute` with `process: "gen"` and `prompt` to get HTML preview
+   - Step 2: Call `POST /app/execute/confirm` with `process: "email"` and `html` (from step 1) to send
+2. Display generated HTML in preview before sending
+3. Store `generated_html` in history responses for potential re-send

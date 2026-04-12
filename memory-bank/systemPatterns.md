@@ -21,6 +21,28 @@ src/
 - **Auth interceptors**: Automatic JWT token injection
 - **Refresh token handling**: Automatic token refresh
 
+## Two-Step Email Workflow
+
+The email sending is split into two steps for user preview:
+
+### Step 1: Generate Preview
+- **Endpoint**: `POST /app/execute`
+- **Payload**: `{ process: "gen", prompt: "..." }`
+- **Response**: `{ success: true, output: "HTML content", error: "" }`
+- **Purpose**: Generate HTML email preview without sending
+
+### Step 2: Confirm Send
+- **Endpoint**: `POST /app/execute/confirm`
+- **Payload**: `{ process: "email", to, subject, html }`
+- **Response**: `{ success: true, output: "...", error: "" }`
+- **Purpose**: Send email with pre-generated HTML
+
+### API Methods
+```javascript
+emailAPI.execute(data)     // Step 1: Generate preview
+emailAPI.confirm(data)     // Step 2: Send email
+```
+
 ## Authentication Flow
 
 1. User submits credentials

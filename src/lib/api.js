@@ -84,6 +84,7 @@ export const configAPI = {
 // Email API
 export const emailAPI = {
   execute: (data) => apiClient.post('/app/execute', data),
+  confirm: (data) => apiClient.post('/app/execute/confirm', data),
   getProcesses: () => apiClient.get('/app/processes'),
 };
 

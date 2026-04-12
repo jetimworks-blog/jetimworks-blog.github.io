@@ -11,10 +11,10 @@ import { MagicLoader } from '../components/ui/MagicLoader';
 import { ProgressSteps } from '../components/ui/ProgressSteps';
 import { emailAPI } from '../lib/api';
 import { validateEmail, validateRequired } from '../lib/validation';
-import { ArrowLeft, Send, Mail, Zap, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Send, Mail, Zap, ChevronRight, Eye, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const steps = ['Recipient', 'Details', 'Send'];
+const steps = ['Recipient', 'Details', 'Preview', 'Send'];
 
 export const YoloEmailForm = () => {
   const navigate = useNavigate();
@@ -27,6 +27,7 @@ export const YoloEmailForm = () => {
     subject: '',
     prompt: '',
   });
+  const [generatedHtml, setGeneratedHtml] = useState('');
   const [errors, setErrors] = useState({});
 
   // Preload form data from history if available
@@ -88,60 +89,161 @@ export const YoloEmailForm = () => {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
+  const handleGeneratePreview = async () => {
+    if (!validateStep(1)) return;
 
     setIsLoading(true);
     
-    // Simulate step progression
-    const stepInterval = setInterval(() => {
+    // Variable step durations for loading animation
+    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
+    let currentDurationIndex = 0;
+    
+    const progressStep = () => {
       setLoadingStep(prev => {
-        if (prev < 4) return prev + 1;
-        clearInterval(stepInterval);
+        if (prev < 6) {
+          currentDurationIndex = prev;
+          setTimeout(progressStep, stepDurations[prev]);
+          return prev + 1;
+        }
         return prev;
       });
-    }, 800);
+    };
+    
+    setTimeout(progressStep, stepDurations[0]);
 
     try {
-      const payload = {
-        process: 'gen-email',
-        to: formData.to,
-        subject: formData.subject,
+      // Step 1: Generate HTML preview using process 'gen'
+      const previewPayload = {
+        process: 'gen',
         prompt: formData.prompt,
       };
 
-      const response = await emailAPI.execute(payload);
+      const previewResponse = await emailAPI.execute(previewPayload);
       
-      clearInterval(stepInterval);
+      if (previewResponse.data.success) {
+        setGeneratedHtml(previewResponse.data.output || '');
+        setCurrentStep(2); // Go to Preview step
+        toast.success('Preview generated!', {
+          description: 'Review your email below before sending.',
+        });
+      } else {
+        const errorMsg = previewResponse.data.error || 'Failed to generate preview.';
+        toast.error('Preview failed', {
+          description: errorMsg,
+        });
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
+      toast.error('Failed to generate preview', {
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+      setLoadingStep(0);
+    }
+  };
+
+  const handleRegeneratePreview = async () => {
+    setIsLoading(true);
+    
+    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
+    let currentDurationIndex = 0;
+    
+    const progressStep = () => {
+      setLoadingStep(prev => {
+        if (prev < 6) {
+          currentDurationIndex = prev;
+          setTimeout(progressStep, stepDurations[prev]);
+          return prev + 1;
+        }
+        return prev;
+      });
+    };
+    
+    setTimeout(progressStep, stepDurations[0]);
+
+    try {
+      const previewPayload = {
+        process: 'gen',
+        prompt: formData.prompt,
+      };
+
+      const previewResponse = await emailAPI.execute(previewPayload);
       
-      // Check if email was sent successfully
-      // success: true with HTTP 200 indicates success
-      // Note: output may be empty if email was directly sent
-      const isSuccess = response.data.success === true || response.status === 200;
+      if (previewResponse.data.success) {
+        setGeneratedHtml(previewResponse.data.output || '');
+        toast.success('Preview regenerated!', {
+          description: 'Check out the new version.',
+        });
+      } else {
+        const errorMsg = previewResponse.data.error || 'Failed to regenerate preview.';
+        toast.error('Regeneration failed', {
+          description: errorMsg,
+        });
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
+      toast.error('Failed to regenerate preview', {
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+      setLoadingStep(0);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    setIsLoading(true);
+    
+    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
+    let currentDurationIndex = 0;
+    
+    const progressStep = () => {
+      setLoadingStep(prev => {
+        if (prev < 6) {
+          currentDurationIndex = prev;
+          setTimeout(progressStep, stepDurations[prev]);
+          return prev + 1;
+        }
+        return prev;
+      });
+    };
+    
+    setTimeout(progressStep, stepDurations[0]);
+
+    try {
+      // Step 3: Confirm and send email with pre-generated HTML
+      const confirmPayload = {
+        process: 'email',
+        to: formData.to,
+        subject: formData.subject,
+        html: generatedHtml,
+      };
+
+      const sendResponse = await emailAPI.confirm(confirmPayload);
       
-      if (isSuccess) {
+      if (sendResponse.data.success) {
         toast.success('Email sent! 🎉', {
           description: `Your email has been delivered to ${formData.to}.`,
         });
         navigate('/result', { 
           state: { 
-            email: response.data.output || 'Email sent successfully!',
+            email: generatedHtml,
             subject: formData.subject,
             to: formData.to,
           }
         });
       } else {
-        toast.error('Oops! Something went wrong', {
-          description: response.data.error || 'Failed to send email. Please try again.',
+        const errorMsg = sendResponse.data.error || 'Failed to send email.';
+        toast.error('Send failed', {
+          description: errorMsg,
         });
       }
     } catch (error) {
-      clearInterval(stepInterval);
       const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
       toast.error('Failed to send email', {
         description: errorMessage,
       });
-      // Navigate to result page with error
       navigate('/result', {
         state: { error: errorMessage }
       });
@@ -157,8 +259,8 @@ export const YoloEmailForm = () => {
         <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
           <MagicLoader 
             currentStep={loadingStep}
-            title="Crafting your YOLO email..."
-            subtitle="This is the fun part!"
+            title={currentStep === 2 ? 'Generating preview...' : 'Crafting your email...'}
+            subtitle={currentStep === 2 ? 'Creating HTML email' : 'This is the fun part!'}
           />
         </div>
       </Layout>
@@ -273,7 +375,7 @@ export const YoloEmailForm = () => {
             </motion.div>
           )}
 
-          {/* Step 2: Review */}
+          {/* Step 2: Preview */}
           {currentStep === 2 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -281,26 +383,39 @@ export const YoloEmailForm = () => {
               exit={{ opacity: 0, x: -20 }}
             >
               <h2 className="text-xl font-serif font-bold text-navy-800 mb-4">
-                Ready to go? 🚀
+                Review Your Email Preview 👀
               </h2>
               <p className="text-navy-600 mb-6">
-                Double-check the details below, then hit that big button and watch the magic happen!
+                Here\'s what your email looks like. If it needs changes, regenerate or go back to edit.
               </p>
               
-              <div className="space-y-4">
-                <div className="p-4 bg-navy-50 rounded-xl">
-                  <p className="text-sm text-navy-500 mb-1">To:</p>
-                  <p className="font-medium text-navy-800">{formData.to}</p>
+              {/* Preview Section */}
+              <div className="border border-navy-200 rounded-xl overflow-hidden mb-6">
+                <div className="bg-navy-50 px-4 py-2 border-b border-navy-200 flex items-center justify-between">
+                  <span className="text-sm font-medium text-navy-600">Email Preview</span>
+                  <button
+                    onClick={handleRegeneratePreview}
+                    className="flex items-center gap-1 text-sm text-brand-blue hover:text-brand-blue/80 transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Regenerate
+                  </button>
                 </div>
-                
-                <div className="p-4 bg-navy-50 rounded-xl">
-                  <p className="text-sm text-navy-500 mb-1">Subject:</p>
-                  <p className="font-medium text-navy-800">{formData.subject}</p>
+                <div 
+                  className="p-6 bg-white max-h-96 overflow-y-auto"
+                  dangerouslySetInnerHTML={{ __html: generatedHtml || '<p class="text-navy-400">No preview generated</p>' }}
+                />
+              </div>
+              
+              {/* Summary */}
+              <div className="space-y-2 p-4 bg-navy-50 rounded-xl">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-navy-500">To:</span>
+                  <span className="font-medium text-navy-800">{formData.to}</span>
                 </div>
-                
-                <div className="p-4 bg-navy-50 rounded-xl">
-                  <p className="text-sm text-navy-500 mb-1">Your idea:</p>
-                  <p className="text-navy-800">{formData.prompt}</p>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-navy-500">Subject:</span>
+                  <span className="font-medium text-navy-800">{formData.subject}</span>
                 </div>
               </div>
             </motion.div>
@@ -317,15 +432,24 @@ export const YoloEmailForm = () => {
               Back
             </Button>
 
-            {currentStep < steps.length - 1 ? (
+            {currentStep === 0 && (
               <Button onClick={handleNext}>
                 Next
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
-            ) : (
-              <Button onClick={handleSubmit} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
-                <Zap className="w-4 h-4 mr-2" />
-                Craft My Email!
+            )}
+
+            {currentStep === 1 && (
+              <Button onClick={handleGeneratePreview}>
+                <Eye className="w-4 h-4 mr-2" />
+                Generate Preview
+              </Button>
+            )}
+
+            {currentStep === 2 && (
+              <Button onClick={handleSendEmail} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                <Send className="w-4 h-4 mr-2" />
+                Send Email
               </Button>
             )}
           </div>

@@ -54,6 +54,14 @@
    - Total animation duration: 40 seconds (5+10+5+5+10+5)
    - Submit buttons now have `disabled={isLoading}` to prevent double-submit
 
+10. Two-Step Email Workflow (April 12, 2026):
+    - Backend now splits email execution into preview and confirm steps
+    - **Preview Step**: POST /app/execute with `process: "gen"` generates HTML without sending
+    - **Confirm Step**: POST /app/execute/confirm with `process: "email"`, `to`, `subject`, `html` sends email
+    - Both YoloEmailForm and DetailedEmailForm now show HTML preview before sending
+    - Users can regenerate preview with updated prompt
+    - Added `emailAPI.confirm()` method to api.js
+
 ## Current Focus
 
 - Application is built and ready for testing
@@ -62,10 +70,10 @@
 ## Next Steps
 
 1. Test authentication flow
-2. Verify email composition modes work
+2. Verify email composition modes work (with new preview workflow)
 3. Test history and settings pages
 4. Test sender configuration persists
-5. Test YOLO and Detailed forms with new 40-second animation
+5. Test two-step workflow: generate preview → review → send
 
 ## Important Patterns
 
@@ -75,6 +83,8 @@
 - Password strength uses `checks` object with: length, lowercase, uppercase, number, special
 - Email API success: `response.data.success === true || response.status === 200`
 - Sender config payload: `{ from_email, from_name }` (optional fields)
-- Both YOLO and Detailed forms use `process: 'gen-email'`
 - Result page handles missing state gracefully - redirects to home
 - Loading animation uses setTimeout chain: `stepDurations = [5000, 10000, 5000, 5000, 10000, 5000]`
+- **Two-step email workflow**: Generate preview first, then confirm to send
+- Preview payload: `{ process: "gen", prompt: "..." }`
+- Confirm payload: `{ process: "email", to, subject, html }`

@@ -1,12 +1,32 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Mail, Wand2, FileText, CheckCircle } from 'lucide-react';
+import { Sparkles, Mail, Wand2, FileText, CheckCircle, Send, Lightbulb } from 'lucide-react';
 
 const defaultSteps = [
   { id: 1, text: 'Analyzing your request...', icon: FileText },
-  { id: 2, text: 'Crafting your perfect email...', icon: Wand2 },
-  { id: 3, text: 'Adding the finishing touches...', icon: Mail },
-  { id: 4, text: 'Almost there...', icon: Sparkles },
+  { id: 2, text: 'Generate email from prompt', icon: Wand2 },
+  { id: 3, text: 'Crafting your perfect email...', icon: Sparkles },
+  { id: 4, text: 'Adding the finishing touches...', icon: Mail },
+  { id: 5, text: 'Send email', icon: Send },
+  { id: 6, text: 'Almost there...', icon: CheckCircle },
+];
+
+const funFacts = [
+  "The average office worker receives 121 emails per day 📧",
+  "Email marketing has an average ROI of $42 for every $1 spent 💰",
+  "The first email was sent in 1971 by Ray Tomlinson 📬",
+  "45% of email campaigns are opened on mobile devices 📱",
+  "Personalized emails improve click rates by 14% 🎯",
+  "Tuesday is the most popular day to send marketing emails 📆",
+  "The subject line is the #1 factor in email open rates ✨",
+  "64% of people decide to open an email based on the subject line 🎪",
+  "Emails with visual content get 94% more views 🖼️",
+  "The average attention span on an email is 8 seconds ⏱️",
+  "A/B testing your emails can increase conversions by 37% 🧪",
+  "Automated emails generate 320% more revenue than manual sends 🚀",
+  "Email is 40x more effective than Facebook or Twitter for customer acquisition 🌐",
+  "The average professional spends 28% of their workday on email ⏰",
+  "Welcome emails have 4x more opens and clicks than other campaigns 👋",
 ];
 
 export const MagicLoader = ({ 
@@ -17,12 +37,26 @@ export const MagicLoader = ({
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [funFact, setFunFact] = useState('');
 
   useEffect(() => {
     if (currentStep > 0 && currentStep <= steps.length) {
       setCurrentStepIndex(currentStep - 1);
     }
   }, [currentStep, steps.length]);
+
+  useEffect(() => {
+    // Pick a random fun fact initially
+    const randomIndex = Math.floor(Math.random() * funFacts.length);
+    setFunFact(funFacts[randomIndex]);
+
+    // Change fun fact every 4 seconds
+    const factInterval = setInterval(() => {
+      setFunFact(funFacts[Math.floor(Math.random() * funFacts.length)]);
+    }, 4000);
+
+    return () => clearInterval(factInterval);
+  }, []);
 
   const currentStepData = steps[currentStepIndex] || steps[0];
 
@@ -48,7 +82,7 @@ export const MagicLoader = ({
       </motion.p>
 
       {/* Progress Steps */}
-      <div className="flex items-center gap-4 md:gap-8 mb-12">
+      <div className="flex items-center gap-3 md:gap-5 mb-8 flex-wrap justify-center max-w-2xl">
         {steps.map((step, index) => {
           const Icon = step.icon;
           const isCompleted = index < currentStepIndex;
@@ -56,10 +90,10 @@ export const MagicLoader = ({
           const isPending = index > currentStepIndex;
 
           return (
-            <div key={step.id} className="flex flex-col items-center">
+            <div key={step.id} className="flex flex-col items-center min-w-[80px]">
               <motion.div
                 className={`
-                  w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center
+                  w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center
                   ${isCompleted ? 'bg-green-500 text-white' : ''}
                   ${isCurrent ? 'bg-brand-blue text-white' : ''}
                   ${isPending ? 'bg-navy-100 text-navy-400' : ''}
@@ -68,7 +102,7 @@ export const MagicLoader = ({
                   scale: [1, 1.1, 1],
                   boxShadow: [
                     '0 0 0 0 rgba(37, 99, 235, 0.4)',
-                    '0 0 0 15px rgba(37, 99, 235, 0)',
+                    '0 0 0 12px rgba(37, 99, 235, 0)',
                     '0 0 0 0 rgba(37, 99, 235, 0)'
                   ]
                 } : {}}
@@ -81,7 +115,7 @@ export const MagicLoader = ({
                       animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
                     >
-                      <CheckCircle size={24} />
+                      <CheckCircle size={20} />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -89,7 +123,7 @@ export const MagicLoader = ({
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                     >
-                      <Icon size={24} />
+                      <Icon size={20} />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -97,7 +131,7 @@ export const MagicLoader = ({
               
               <motion.p 
                 className={`
-                  mt-2 text-xs md:text-sm font-medium text-center max-w-[80px]
+                  mt-2 text-xs font-medium text-center max-w-[80px] leading-tight
                   ${isCurrent ? 'text-brand-blue' : ''}
                   ${isCompleted ? 'text-green-600' : ''}
                   ${isPending ? 'text-navy-400' : ''}
@@ -134,6 +168,25 @@ export const MagicLoader = ({
           <p className="text-navy-600 italic">
             &ldquo;{currentStepData.text}&rdquo;
           </p>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Fun Facts Section */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={funFact}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+          className="mt-8 max-w-md mx-auto"
+        >
+          <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+            <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 leading-relaxed">
+              {funFact}
+            </p>
+          </div>
         </motion.div>
       </AnimatePresence>
 
