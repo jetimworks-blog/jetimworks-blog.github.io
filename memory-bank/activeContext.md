@@ -41,6 +41,19 @@
    - Error handling: forms redirect to /result with error state on API failure
    - EmailResult page: never blank, shows "Something went wrong" with navigation options
 
+8. Enhanced MagicLoader (April 12, 2026):
+   - Expanded from 4 to 6 progress steps for more detailed feedback
+   - Added "Generate email from prompt" and "Send email" steps
+   - New fun facts section that rotates every 4 seconds with email statistics
+   - Smaller icon sizes (20px) for better mobile responsiveness
+   - Better responsive layout with flex-wrap and max-width constraints
+
+9. Variable Loading Animation (April 12, 2026):
+   - Both YOLO and Detailed forms now use setTimeout (not setInterval)
+   - Variable step durations: steps 2 & 5 take 10s, others take 5s
+   - Total animation duration: 40 seconds (5+10+5+5+10+5)
+   - Submit buttons now have `disabled={isLoading}` to prevent double-submit
+
 ## Current Focus
 
 - Application is built and ready for testing
@@ -52,7 +65,7 @@
 2. Verify email composition modes work
 3. Test history and settings pages
 4. Test sender configuration persists
-5. Test YOLO and Detailed forms with same payload
+5. Test YOLO and Detailed forms with new 40-second animation
 
 ## Important Patterns
 
@@ -64,3 +77,4 @@
 - Sender config payload: `{ from_email, from_name }` (optional fields)
 - Both YOLO and Detailed forms use `process: 'gen-email'`
 - Result page handles missing state gracefully - redirects to home
+- Loading animation uses setTimeout chain: `stepDurations = [5000, 10000, 5000, 5000, 10000, 5000]`
