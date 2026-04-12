@@ -20,7 +20,14 @@ npm run build   # Production build
 
 ## Environment Variables
 
-- `VITE_API_BASE_URL=http://localhost:8080`
+- `VITE_API_BASE_URL=http://172.20.10.3:8080` (network backend URL)
+- Default: `http://localhost:8080` (fallback)
+
+## Network Configuration
+
+- **Vite dev server**: `0.0.0.0:5173` (accessible on network)
+- **Backend API**: `http://172.20.10.3:8080`
+- To run over network: `npm run dev`
 
 ## Backend Requirements
 

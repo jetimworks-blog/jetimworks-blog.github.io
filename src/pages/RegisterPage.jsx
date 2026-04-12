@@ -79,7 +79,7 @@ export const RegisterPage = () => {
       
       if (result.success) {
         toast.success('Account created! 🎉', {
-          description: 'Welcome to Email Crafter. Let\'s get started!',
+          description: "Welcome to Email Crafter. Let's get started!",
         });
         navigate('/home', { replace: true });
       } else {

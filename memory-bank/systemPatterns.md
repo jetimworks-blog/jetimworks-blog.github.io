@@ -17,7 +17,7 @@ src/
 ## API Integration
 
 - **Axios instance**: `src/lib/api.js`
-- **Base URL**: `http://localhost:8080`
+- **Base URL**: `http://172.20.10.3:8080` (network) or `http://localhost:8080` (local fallback)
 - **Auth interceptors**: Automatic JWT token injection
 - **Refresh token handling**: Automatic token refresh
 

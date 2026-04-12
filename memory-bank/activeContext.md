@@ -62,10 +62,17 @@
     - Users can regenerate preview with updated prompt
     - Added `emailAPI.confirm()` method to api.js
 
+11. Network Configuration (April 12, 2026):
+    - Added `server.host: '0.0.0.0'` to vite.config.js for network access
+    - Updated API base URL to `http://172.20.10.3:8080` for network development
+    - Updated memory bank documentation with network configuration details
+    - Normalized escaped quotes in page components to proper apostrophes
+
 ## Current Focus
 
 - Application is built and ready for testing
 - Backend should be running on port 8080
+- Remote development workflow with network access enabled
 
 ## Next Steps
 
@@ -74,6 +81,7 @@
 3. Test history and settings pages
 4. Test sender configuration persists
 5. Test two-step workflow: generate preview → review → send
+6. Test network access from remote devices
 
 ## Important Patterns
 
@@ -88,3 +96,4 @@
 - **Two-step email workflow**: Generate preview first, then confirm to send
 - Preview payload: `{ process: "gen", prompt: "..." }`
 - Confirm payload: `{ process: "email", to, subject, html }`
+- **Network development**: Vite server accessible at `http://0.0.0.0:5173`, API at `http://172.20.10.3:8080`

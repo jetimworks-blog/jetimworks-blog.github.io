@@ -35,7 +35,7 @@ export const HomePage = () => {
       icon: Zap,
       title: 'YOLO Quick Send',
       tagline: 'Just tell us what you need',
-      description: 'Quick and dirty? We\'ve got you covered. Drop in the recipient, your subject, and a rough idea of what you want — we\'ll handle the rest. Perfect for when you need to send something now.',
+      description: "Quick and dirty? We've got you covered. Drop in the recipient, your subject, and a rough idea of what you want — we'll handle the rest. Perfect for when you need to send something now.",
       cta: 'Fire Away! 🚀',
       color: 'from-yellow-500 to-orange-500',
       hoverColor: 'group-hover:shadow-yellow-500/30',
@@ -45,8 +45,8 @@ export const HomePage = () => {
       icon: Sparkles,
       title: 'Craft with Care',
       tagline: 'Meticulous attention to detail',
-      description: 'Take your time. We\'ll ask about the tone, style, word count, and even the font feel. It\'s like having a professional email designer at your fingertips.',
-      cta: 'Let\'s Craft Something Special ✨',
+      description: "Take your time. We'll ask about the tone, style, word count, and even the font feel. It's like having a professional email designer at your fingertips.",
+      cta: "Let's Craft Something Special ✨",
       color: 'from-brand-blue to-navy-600',
       hoverColor: 'group-hover:shadow-brand-blue/30',
     },
@@ -65,7 +65,7 @@ export const HomePage = () => {
             Welcome back, {user?.email?.split('@')[0] || 'there'}! 👋
           </h1>
           <p className="text-lg text-navy-600 max-w-2xl mx-auto">
-            Ready to craft some emails? Choose your adventure below — whether you\'re in a rush or want to fine-tune every word.
+            Ready to craft some emails? Choose your adventure below — whether you're in a rush or want to fine-tune every word.
           </p>
         </motion.div>
 
@@ -82,7 +82,7 @@ export const HomePage = () => {
                 Setup Required: Resend API Key
               </h3>
               <p className="text-sm text-yellow-700 mb-3">
-                To send emails, you\'ll need to configure your Resend API key. This keeps your email sending secure and under your control.
+                To send emails, you'll need to configure your Resend API key. This keeps your email sending secure and under your control.
               </p>
               <Link to="/settings">
                 <Button variant="secondary" size="sm" className="bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800">

@@ -30,7 +30,7 @@ export const EmailResult = () => {
                 Something went wrong
               </h2>
               <p className="text-navy-600 mb-6">
-                {error || 'We couldn\'t craft your email. Please try again.'}
+                {error || "We couldn't craft your email. Please try again."}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button

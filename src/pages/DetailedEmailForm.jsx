@@ -310,7 +310,7 @@ export const DetailedEmailForm = () => {
               The Basics 📧
             </h2>
             <p className="text-navy-600 mb-6">
-              Let\'s start with who\'s receiving this and what it\'s about.
+              Let's start with who's receiving this and what it's about.
             </p>
             
             <div className="space-y-4">
@@ -551,7 +551,7 @@ export const DetailedEmailForm = () => {
               Review Your Email Preview 👀
             </h2>
             <p className="text-navy-600 mb-6">
-              Here\'s what your email looks like. If it needs changes, regenerate or go back to edit.
+              Here's what your email looks like. If it needs changes, regenerate or go back to edit.
             </p>
             
             {/* Preview Section */}

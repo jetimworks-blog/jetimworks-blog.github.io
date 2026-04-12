@@ -313,10 +313,10 @@ export const YoloEmailForm = () => {
               exit={{ opacity: 0, x: -20 }}
             >
               <h2 className="text-xl font-serif font-bold text-navy-800 mb-4">
-                Who\'s getting this email? 📧
+                Who's getting this email? 📧
               </h2>
               <p className="text-navy-600 mb-6">
-                Enter the recipient\'s email address. We\'ll make sure they receive something worth opening.
+                Enter the recipient's email address. We'll make sure they receive something worth opening.
               </p>
               
               <div className="mb-6">
@@ -345,10 +345,10 @@ export const YoloEmailForm = () => {
               exit={{ opacity: 0, x: -20 }}
             >
               <h2 className="text-xl font-serif font-bold text-navy-800 mb-4">
-                What\'s this about? 📝
+                What's this about? 📝
               </h2>
               <p className="text-navy-600 mb-6">
-                Give us the subject line and a rough idea of what you want to say. Don\'t worry about perfect words — that\'s our job!
+                Give us the subject line and a rough idea of what you want to say. Don't worry about perfect words — that's our job!
               </p>
               
               <div className="space-y-4">
@@ -386,7 +386,7 @@ export const YoloEmailForm = () => {
                 Review Your Email Preview 👀
               </h2>
               <p className="text-navy-600 mb-6">
-                Here\'s what your email looks like. If it needs changes, regenerate or go back to edit.
+                Here's what your email looks like. If it needs changes, regenerate or go back to edit.
               </p>
               
               {/* Preview Section */}
