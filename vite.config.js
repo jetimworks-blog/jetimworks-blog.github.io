@@ -3,9 +3,10 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
-  base: '/blog/',
+  // Use /blog/ for production builds (GitHub Pages), / for local development
+  base: command === 'serve' ? '/' : '/blog/',
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -14,4 +15,4 @@ export default defineConfig({
     host: '0.0.0.0',  // Allow network access
     port: 5173,
   },
-})
+}))
