@@ -1,17 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Mail, Wand2, FileText, CheckCircle, Send, Lightbulb } from 'lucide-react';
+import { Lightbulb, Sparkles, Wand2 } from 'lucide-react';
 
-const defaultSteps = [
-  { id: 1, text: 'Analyzing your request...', icon: FileText },
-  { id: 2, text: 'Generate email from prompt', icon: Wand2 },
-  { id: 3, text: 'Crafting your perfect email...', icon: Sparkles },
-  { id: 4, text: 'Adding the finishing touches...', icon: Mail },
-  { id: 5, text: 'Send email', icon: Send },
-  { id: 6, text: 'Almost there...', icon: CheckCircle },
+const defaultProgressLabels = [
+  "Doodling...",
+  "Calibrating...",
+  "Adding magic...",
+  "Polishing pixels...",
+  "Summoning words...",
+  " Brewing inspiration...",
+  "Fine-tuning...",
+  "Sprinkling stardust...",
+  "Arranging letters...",
+  "Channeling creativity...",
+  "Consulting the oracles...",
+  "Unleashing wisdom...",
+  "Weaving sentences...",
+  "Perfecting prose...",
 ];
 
-const funFacts = [
+const defaultFunFacts = [
   "The average office worker receives 121 emails per day 📧",
   "Email marketing has an average ROI of $42 for every $1 spent 💰",
   "The first email was sent in 1971 by Ray Tomlinson 📬",
@@ -30,38 +38,64 @@ const funFacts = [
 ];
 
 export const MagicLoader = ({ 
-  steps = defaultSteps, 
-  currentStep = 0, 
-  title = "We're crafting your email magic...",
-  subtitle = 'This only takes a moment'
+  title = "Creating magic...",
+  subtitle = 'This only takes a moment',
+  progressLabels = defaultProgressLabels,
+  funFacts = defaultFunFacts,
+  labelChangeInterval = 2000,
+  factChangeInterval = 4000,
+  variant = 'default'
 }) => {
-  const [displayedText, setDisplayedText] = useState('');
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [funFact, setFunFact] = useState('');
+  const [currentLabelIndex, setCurrentLabelIndex] = useState(0);
+  const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
+  // Cycle through progress labels
   useEffect(() => {
-    if (currentStep > 0 && currentStep <= steps.length) {
-      setCurrentStepIndex(currentStep - 1);
-    }
-  }, [currentStep, steps.length]);
+    const interval = setInterval(() => {
+      setCurrentLabelIndex(prev => (prev + 1) % progressLabels.length);
+    }, labelChangeInterval);
 
+    return () => clearInterval(interval);
+  }, [progressLabels.length, labelChangeInterval]);
+
+  // Cycle through fun facts (different timing)
   useEffect(() => {
-    // Pick a random fun fact initially
     const randomIndex = Math.floor(Math.random() * funFacts.length);
-    setFunFact(funFacts[randomIndex]);
+    setCurrentFactIndex(randomIndex);
 
-    // Change fun fact every 4 seconds
     const factInterval = setInterval(() => {
-      setFunFact(funFacts[Math.floor(Math.random() * funFacts.length)]);
-    }, 4000);
+      setCurrentFactIndex(prev => (prev + 1) % funFacts.length);
+    }, factChangeInterval);
 
     return () => clearInterval(factInterval);
-  }, []);
+  }, [funFacts.length, factChangeInterval]);
 
-  const currentStepData = steps[currentStepIndex] || steps[0];
+  const currentLabel = progressLabels[currentLabelIndex];
+  const currentFact = funFacts[currentFactIndex];
+
+  // Variant styles
+  const variantStyles = useMemo(() => ({
+    default: {
+      gradient: 'from-brand-blue to-navy-600',
+      glow: 'rgba(37, 99, 235, 0.4)',
+      accent: 'text-brand-blue'
+    },
+    generating: {
+      gradient: 'from-purple-500 to-pink-500',
+      glow: 'rgba(168, 85, 247, 0.4)',
+      accent: 'text-purple-500'
+    },
+    sending: {
+      gradient: 'from-green-500 to-teal-500',
+      glow: 'rgba(34, 197, 94, 0.4)',
+      accent: 'text-green-500'
+    }
+  }), []);
+
+  const styles = variantStyles[variant] || variantStyles.default;
 
   return (
-    <div className="flex flex-col items-center justify-center py-12">
+    <div className="flex flex-col items-center justify-center py-12 px-4 relative">
       {/* Animated Title */}
       <motion.h2 
         className="text-2xl md:text-3xl font-serif font-bold text-navy-800 mb-2 text-center"
@@ -73,7 +107,7 @@ export const MagicLoader = ({
       </motion.h2>
       
       <motion.p 
-        className="text-navy-500 mb-8"
+        className="text-navy-500 mb-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -81,110 +115,97 @@ export const MagicLoader = ({
         {subtitle}
       </motion.p>
 
-      {/* Progress Steps */}
-      <div className="flex items-center gap-3 md:gap-5 mb-8 flex-wrap justify-center max-w-2xl">
-        {steps.map((step, index) => {
-          const Icon = step.icon;
-          const isCompleted = index < currentStepIndex;
-          const isCurrent = index === currentStepIndex;
-          const isPending = index > currentStepIndex;
-
-          return (
-            <div key={step.id} className="flex flex-col items-center min-w-[80px]">
-              <motion.div
-                className={`
-                  w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center
-                  ${isCompleted ? 'bg-green-500 text-white' : ''}
-                  ${isCurrent ? 'bg-brand-blue text-white' : ''}
-                  ${isPending ? 'bg-navy-100 text-navy-400' : ''}
-                `}
-                animate={isCurrent ? { 
-                  scale: [1, 1.1, 1],
-                  boxShadow: [
-                    '0 0 0 0 rgba(37, 99, 235, 0.4)',
-                    '0 0 0 12px rgba(37, 99, 235, 0)',
-                    '0 0 0 0 rgba(37, 99, 235, 0)'
-                  ]
-                } : {}}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                <AnimatePresence mode="wait">
-                  {isCompleted ? (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                    >
-                      <CheckCircle size={20} />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <Icon size={20} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-              
-              <motion.p 
-                className={`
-                  mt-2 text-xs font-medium text-center max-w-[80px] leading-tight
-                  ${isCurrent ? 'text-brand-blue' : ''}
-                  ${isCompleted ? 'text-green-600' : ''}
-                  ${isPending ? 'text-navy-400' : ''}
-                `}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                {step.text}
-              </motion.p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Animated Progress Bar */}
-      <div className="w-64 md:w-80 h-2 bg-navy-100 rounded-full overflow-hidden">
+      {/* Main Spinner Container */}
+      <div className="relative mb-10">
+        {/* Outer glow ring */}
         <motion.div
-          className="h-full bg-gradient-to-r from-brand-blue to-navy-600 rounded-full"
-          initial={{ width: '0%' }}
-          animate={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
-          transition={{ duration: 0.5 }}
+          className={`w-24 h-24 rounded-full bg-gradient-to-br ${styles.gradient}`}
+          animate={{ 
+            rotate: 360,
+            scale: [1, 1.05, 1],
+          }}
+          transition={{ 
+            rotate: { duration: 3, repeat: Infinity, ease: 'linear' },
+            scale: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }
+          }}
         />
+        
+        {/* Inner white circle */}
+        <motion.div
+          className="absolute inset-2 bg-white rounded-full flex items-center justify-center"
+          animate={{ 
+            boxShadow: [
+              `0 0 0 0 ${styles.glow}`,
+              `0 0 0 15px rgba(255, 255, 255, 0)`,
+              `0 0 0 0 ${styles.glow}`
+            ]
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          >
+            <Sparkles className={`w-8 h-8 ${styles.accent}`} />
+          </motion.div>
+        </motion.div>
+
+        {/* Orbiting dots */}
+        {[0, 1, 2, 3].map(i => (
+          <motion.div
+            key={i}
+            className={`absolute w-2 h-2 rounded-full bg-gradient-to-br ${styles.gradient}`}
+            style={{
+              top: '50%',
+              left: '50%',
+            }}
+            animate={{
+              rotate: [`${i * 90}deg`, `${i * 90 + 360}deg`],
+              scale: [1, 0.5, 1],
+              opacity: [0.8, 1, 0.8]
+            }}
+            transition={{
+              rotate: { duration: 4, repeat: Infinity, ease: 'linear' },
+              scale: { duration: 1, repeat: Infinity, ease: 'easeInOut', delay: i * 0.25 },
+              opacity: { duration: 1, repeat: Infinity, ease: 'easeInOut', delay: i * 0.25 }
+            }}
+          />
+        ))}
       </div>
 
-      {/* Current Step Text */}
+      {/* Cycling Progress Label */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentStepIndex}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="mt-6 text-center"
+          key={currentLabel}
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+          transition={{ duration: 0.3 }}
+          className="mb-8"
         >
-          <p className="text-navy-600 italic">
-            &ldquo;{currentStepData.text}&rdquo;
-          </p>
+          <div className="flex items-center gap-2 px-4 py-2 bg-navy-50 rounded-full border border-navy-100">
+            <Wand2 className={`w-4 h-4 ${styles.accent}`} />
+            <span className="text-navy-700 font-medium">
+              {currentLabel}
+            </span>
+          </div>
         </motion.div>
       </AnimatePresence>
 
       {/* Fun Facts Section */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={funFact}
+          key={currentFact}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="mt-8 max-w-md mx-auto"
+          transition={{ duration: 0.4 }}
+          className="max-w-md mx-auto w-full"
         >
           <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
             <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-amber-800 leading-relaxed">
-              {funFact}
+              {currentFact}
             </p>
           </div>
         </motion.div>

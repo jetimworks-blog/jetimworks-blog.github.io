@@ -21,7 +21,6 @@ export const YoloEmailForm = () => {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
   const [formData, setFormData] = useState({
     to: '',
     subject: '',
@@ -93,23 +92,6 @@ export const YoloEmailForm = () => {
     if (!validateStep(1)) return;
 
     setIsLoading(true);
-    
-    // Variable step durations for loading animation
-    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
-    let currentDurationIndex = 0;
-    
-    const progressStep = () => {
-      setLoadingStep(prev => {
-        if (prev < 6) {
-          currentDurationIndex = prev;
-          setTimeout(progressStep, stepDurations[prev]);
-          return prev + 1;
-        }
-        return prev;
-      });
-    };
-    
-    setTimeout(progressStep, stepDurations[0]);
 
     try {
       // Step 1: Generate HTML preview using process 'gen'
@@ -139,28 +121,11 @@ export const YoloEmailForm = () => {
       });
     } finally {
       setIsLoading(false);
-      setLoadingStep(0);
     }
   };
 
   const handleRegeneratePreview = async () => {
     setIsLoading(true);
-    
-    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
-    let currentDurationIndex = 0;
-    
-    const progressStep = () => {
-      setLoadingStep(prev => {
-        if (prev < 6) {
-          currentDurationIndex = prev;
-          setTimeout(progressStep, stepDurations[prev]);
-          return prev + 1;
-        }
-        return prev;
-      });
-    };
-    
-    setTimeout(progressStep, stepDurations[0]);
 
     try {
       const previewPayload = {
@@ -188,28 +153,11 @@ export const YoloEmailForm = () => {
       });
     } finally {
       setIsLoading(false);
-      setLoadingStep(0);
     }
   };
 
   const handleSendEmail = async () => {
     setIsLoading(true);
-    
-    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
-    let currentDurationIndex = 0;
-    
-    const progressStep = () => {
-      setLoadingStep(prev => {
-        if (prev < 6) {
-          currentDurationIndex = prev;
-          setTimeout(progressStep, stepDurations[prev]);
-          return prev + 1;
-        }
-        return prev;
-      });
-    };
-    
-    setTimeout(progressStep, stepDurations[0]);
 
     try {
       // Step 3: Confirm and send email with pre-generated HTML
@@ -249,7 +197,6 @@ export const YoloEmailForm = () => {
       });
     } finally {
       setIsLoading(false);
-      setLoadingStep(0);
     }
   };
 
@@ -258,9 +205,9 @@ export const YoloEmailForm = () => {
       <Layout>
         <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
           <MagicLoader 
-            currentStep={loadingStep}
             title={currentStep === 2 ? 'Generating preview...' : 'Crafting your email...'}
             subtitle={currentStep === 2 ? 'Creating HTML email' : 'This is the fun part!'}
+            variant="generating"
           />
         </div>
       </Layout>

@@ -67,7 +67,7 @@ export const Footer = () => {
         {/* Divider */}
         <div className="border-t border-navy-800 mt-8 pt-8">
           <p className="text-navy-400 text-sm text-center">
-            © 2024 Email Crafter. By Jetimworks. Crafted with care for email lovers everywhere.
+            © 2026 Email Crafter. By Jetimworks. Crafted with care for email lovers everywhere.
           </p>
         </div>
       </div>

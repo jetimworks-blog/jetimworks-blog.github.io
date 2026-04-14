@@ -11,8 +11,9 @@ import { MagicLoader } from '../components/ui/MagicLoader';
 import { ProgressSteps } from '../components/ui/ProgressSteps';
 import { emailAPI } from '../lib/api';
 import { validateEmail, validateRequired } from '../lib/validation';
-import { ArrowLeft, Send, Sparkles, ChevronRight, ChevronLeft, Eye, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, ChevronRight, ChevronLeft, Eye, RefreshCw, Pencil, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 
 const steps = ['Basics', 'Tone & Style', 'Content', 'Preview'];
 
@@ -23,6 +24,10 @@ const toneOptions = [
   { value: 'formal', label: 'Formal', icon: '🎩' },
   { value: 'persuasive', label: 'Persuasive', icon: '🔥' },
 ];
+
+const customTonePlaceholder = `Describe the tone and style you want for your email...
+
+Example: "Warm and approachable, like a mentor giving feedback over coffee. Professional but not stiff, with a touch of humor. Think of an email from your favorite professor who genuinely cares about your success."`;
 
 const styleOptions = [
   { value: 'minimal', label: 'Minimal', desc: 'Clean and simple' },
@@ -38,12 +43,67 @@ const fontOptions = [
   { value: 'playful', label: 'Playful', desc: 'Fun and creative' },
 ];
 
+const colorOptions = [
+  { value: 'navy', label: 'Navy Blue', color: '#1e3a5f', icon: '🔵' },
+  { value: 'ocean', label: 'Ocean Blue', color: '#0077b6', icon: '🌊' },
+  { value: 'forest', label: 'Forest Green', color: '#2d6a4f', icon: '🌲' },
+  { value: 'sunset', label: 'Sunset Orange', color: '#e76f51', icon: '🌅' },
+  { value: 'berry', label: 'Berry Purple', color: '#7b2cbf', icon: '🍇' },
+  { value: 'midnight', label: 'Midnight', color: '#1a1a2e', icon: '🌙' },
+  { value: 'rose', label: 'Rose Gold', color: '#b76e79', icon: '🌹' },
+  { value: 'slate', label: 'Slate Gray', color: '#4a5568', icon: '⬜' },
+];
+
+const feelOptions = [
+  { value: 'professional', label: 'Professional', icon: '💼', desc: 'Business-ready' },
+  { value: 'warm', label: 'Warm & Friendly', icon: '🤗', desc: 'Approachable' },
+  { value: 'bold', label: 'Bold & Confident', icon: '💪', desc: 'Strong presence' },
+  { value: 'elegant', label: 'Elegant', icon: '✨', desc: 'Sophisticated' },
+  { value: 'playful', label: 'Playful', icon: '🎉', desc: 'Fun & energetic' },
+  { value: 'minimal', label: 'Minimal', icon: '◻️', desc: 'Clean & simple' },
+  { value: 'creative', label: 'Creative', icon: '🎨', desc: 'Artistic flair' },
+  { value: 'trustworthy', label: 'Trustworthy', icon: '🛡️', desc: 'Reliable feel' },
+];
+
+const widthOptions = [
+  { value: '50', label: 'Compact', desc: '50% width - narrow email' },
+  { value: '70', label: 'Standard', desc: '70% width - balanced layout' },
+  { value: '100', label: 'Full Width', desc: '100% width - expansive' },
+];
+
+const borderRadiusOptions = [
+  { value: 'none', label: 'None', desc: 'Sharp corners' },
+  { value: 'small', label: 'Small', desc: 'Subtle rounding' },
+  { value: 'medium', label: 'Medium', desc: 'Moderate rounding' },
+  { value: 'large', label: 'Large', desc: 'Rounded corners' },
+  { value: 'pill', label: 'Pill', desc: 'Fully rounded' },
+];
+
+const shadowOptions = [
+  { value: 'none', label: 'None', desc: 'Flat design' },
+  { value: 'light', label: 'Light', desc: 'Subtle shadow' },
+  { value: 'medium', label: 'Medium', desc: 'Moderate depth' },
+  { value: 'heavy', label: 'Heavy', desc: 'Strong depth' },
+];
+
+const spacingOptions = [
+  { value: 'tight', label: 'Tight', desc: 'Compact spacing' },
+  { value: 'normal', label: 'Normal', desc: 'Balanced spacing' },
+  { value: 'spacious', label: 'Spacious', desc: ' airy feel' },
+];
+
+const headerStyleOptions = [
+  { value: 'none', label: 'None', desc: 'No header image' },
+  { value: 'banner', label: 'Banner', desc: 'Full-width banner' },
+  { value: 'logo', label: 'Logo Center', desc: 'Centered logo' },
+  { value: 'split', label: 'Split Design', desc: 'Text + image' },
+];
+
 export const DetailedEmailForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
   const [formData, setFormData] = useState({
     // Step 1: Basics
     to: '',
@@ -53,6 +113,13 @@ export const DetailedEmailForm = () => {
     tone: 'professional',
     style: 'minimal',
     font: 'serif',
+    color: 'navy',
+    feel: 'professional',
+    emailWidth: '70',
+    borderRadius: 'medium',
+    shadow: 'light',
+    spacing: 'normal',
+    headerStyle: 'none',
     // Step 3: Content
     wordCountMin: 50,
     wordCountMax: 150,
@@ -62,6 +129,8 @@ export const DetailedEmailForm = () => {
   });
   const [generatedHtml, setGeneratedHtml] = useState('');
   const [errors, setErrors] = useState({});
+  const [useCustomTone, setUseCustomTone] = useState(false);
+  const [customTone, setCustomTone] = useState('');
 
   // Preload form data from history if available
   useEffect(() => {
@@ -116,9 +185,23 @@ export const DetailedEmailForm = () => {
 
   const buildEnhancedPrompt = () => {
     let enhancedPrompt = formData.prompt;
-    enhancedPrompt += `\n\nTone: ${formData.tone}`;
+    
+    // Include tone - either from preset or custom description
+    if (useCustomTone && customTone.trim()) {
+      enhancedPrompt += `\n\nTone & Style Description: ${customTone}`;
+    } else {
+      enhancedPrompt += `\n\nTone: ${formData.tone}`;
+    }
+    
     enhancedPrompt += `\nStyle: ${formData.style}`;
     enhancedPrompt += `\nFont preference: ${formData.font}`;
+    enhancedPrompt += `\nColor theme: ${formData.color}`;
+    enhancedPrompt += `\nOverall feel: ${formData.feel}`;
+    enhancedPrompt += `\nEmail width: ${formData.emailWidth}%`;
+    enhancedPrompt += `\nBorder radius: ${formData.borderRadius}`;
+    enhancedPrompt += `\nShadow depth: ${formData.shadow}`;
+    enhancedPrompt += `\nContent spacing: ${formData.spacing}`;
+    enhancedPrompt += `\nHeader style: ${formData.headerStyle}`;
     enhancedPrompt += `\nWord count: ${formData.wordCountMin}-${formData.wordCountMax} words`;
     if (formData.keyMessage) {
       enhancedPrompt += `\nKey message to convey: ${formData.keyMessage}`;
@@ -131,23 +214,6 @@ export const DetailedEmailForm = () => {
 
   const handleGeneratePreview = async () => {
     setIsLoading(true);
-    
-    // Variable step durations for loading animation
-    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
-    let currentDurationIndex = 0;
-    
-    const progressStep = () => {
-      setLoadingStep(prev => {
-        if (prev < 6) {
-          currentDurationIndex = prev;
-          setTimeout(progressStep, stepDurations[prev]);
-          return prev + 1;
-        }
-        return prev;
-      });
-    };
-    
-    setTimeout(progressStep, stepDurations[0]);
 
     try {
       // Generate HTML preview using process 'gen'
@@ -179,28 +245,11 @@ export const DetailedEmailForm = () => {
       });
     } finally {
       setIsLoading(false);
-      setLoadingStep(0);
     }
   };
 
   const handleRegeneratePreview = async () => {
     setIsLoading(true);
-    
-    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
-    let currentDurationIndex = 0;
-    
-    const progressStep = () => {
-      setLoadingStep(prev => {
-        if (prev < 6) {
-          currentDurationIndex = prev;
-          setTimeout(progressStep, stepDurations[prev]);
-          return prev + 1;
-        }
-        return prev;
-      });
-    };
-    
-    setTimeout(progressStep, stepDurations[0]);
 
     try {
       const enhancedPrompt = buildEnhancedPrompt();
@@ -230,28 +279,11 @@ export const DetailedEmailForm = () => {
       });
     } finally {
       setIsLoading(false);
-      setLoadingStep(0);
     }
   };
 
   const handleSendEmail = async () => {
     setIsLoading(true);
-    
-    const stepDurations = [5000, 10000, 5000, 5000, 10000, 5000];
-    let currentDurationIndex = 0;
-    
-    const progressStep = () => {
-      setLoadingStep(prev => {
-        if (prev < 6) {
-          currentDurationIndex = prev;
-          setTimeout(progressStep, stepDurations[prev]);
-          return prev + 1;
-        }
-        return prev;
-      });
-    };
-    
-    setTimeout(progressStep, stepDurations[0]);
 
     try {
       // Confirm and send email with pre-generated HTML
@@ -292,7 +324,6 @@ export const DetailedEmailForm = () => {
       });
     } finally {
       setIsLoading(false);
-      setLoadingStep(0);
     }
   };
 
@@ -358,78 +389,333 @@ export const DetailedEmailForm = () => {
               Set the mood. How do you want this email to feel?
             </p>
             
-            <div className="space-y-6">
-              {/* Tone */}
+            <div className="space-y-8">
+              {/* Tone Toggle */}
               <div>
-                <label className="block text-sm font-medium text-navy-700 mb-3">
-                  Choose a tone
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {toneOptions.map((tone) => (
-                    <button
-                      key={tone.value}
-                      onClick={() => updateFormData('tone', tone.value)}
-                      className={`
-                        p-3 rounded-xl border-2 transition-all text-left
-                        ${formData.tone === tone.value 
-                          ? 'border-brand-blue bg-brand-blue/5' 
-                          : 'border-navy-200 hover:border-navy-300'}
-                      `}
-                    >
-                      <span className="text-2xl mb-1 block">{tone.icon}</span>
-                      <span className="text-sm font-medium text-navy-800">{tone.label}</span>
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-sm font-medium text-navy-700">
+                    Choose how to define your tone
+                  </label>
+                </div>
+                <div className="flex gap-3 mb-4">
+                  <button
+                    onClick={() => setUseCustomTone(false)}
+                    className={`
+                      flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all
+                      ${!useCustomTone 
+                        ? 'border-brand-blue bg-brand-blue/5' 
+                        : 'border-navy-200 hover:border-navy-300'}
+                    `}
+                  >
+                    <List className="w-4 h-4" />
+                    <span className="text-sm font-medium">Pick presets</span>
+                  </button>
+                  <button
+                    onClick={() => setUseCustomTone(true)}
+                    className={`
+                      flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all
+                      ${useCustomTone 
+                        ? 'border-brand-blue bg-brand-blue/5' 
+                        : 'border-navy-200 hover:border-navy-300'}
+                    `}
+                  >
+                    <Pencil className="w-4 h-4" />
+                    <span className="text-sm font-medium">Describe my own</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Style */}
-              <div>
-                <label className="block text-sm font-medium text-navy-700 mb-3">
-                  Email style
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {styleOptions.map((style) => (
-                    <button
-                      key={style.value}
-                      onClick={() => updateFormData('style', style.value)}
-                      className={`
-                        p-3 rounded-xl border-2 transition-all text-left
-                        ${formData.style === style.value 
-                          ? 'border-brand-blue bg-brand-blue/5' 
-                          : 'border-navy-200 hover:border-navy-300'}
-                      `}
-                    >
-                      <span className="text-sm font-medium text-navy-800 block">{style.label}</span>
-                      <span className="text-xs text-navy-500">{style.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Preset Tone Options */}
+              <AnimatePresence>
+                {!useCustomTone && (
+                  <motion.div
+                    key="preset-tone"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <label className="block text-sm font-medium text-navy-700 mb-3">
+                      Choose a tone
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                      {toneOptions.map((tone) => (
+                        <button
+                          key={tone.value}
+                          onClick={() => updateFormData('tone', tone.value)}
+                          className={`
+                            p-3 rounded-xl border-2 transition-all text-left
+                            ${formData.tone === tone.value 
+                              ? 'border-brand-blue bg-brand-blue/5' 
+                              : 'border-navy-200 hover:border-navy-300'}
+                          `}
+                        >
+                          <span className="text-2xl mb-1 block">{tone.icon}</span>
+                          <span className="text-sm font-medium text-navy-800">{tone.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              {/* Font */}
-              <div>
-                <label className="block text-sm font-medium text-navy-700 mb-3">
-                  Font feel
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {fontOptions.map((font) => (
-                    <button
-                      key={font.value}
-                      onClick={() => updateFormData('font', font.value)}
-                      className={`
-                        p-3 rounded-xl border-2 transition-all text-left
-                        ${formData.font === font.value 
-                          ? 'border-brand-blue bg-brand-blue/5' 
-                          : 'border-navy-200 hover:border-navy-300'}
-                      `}
-                    >
-                      <span className="text-sm font-medium text-navy-800 block">{font.label}</span>
-                      <span className="text-xs text-navy-500">{font.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Custom Tone Input */}
+              <AnimatePresence>
+                {useCustomTone && (
+                  <motion.div
+                    key="custom-tone"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <label className="block text-sm font-medium text-navy-700 mb-3">
+                      Describe your desired tone & style
+                    </label>
+                    <Textarea
+                      placeholder={customTonePlaceholder}
+                      value={customTone}
+                      onChange={(e) => setCustomTone(e.target.value)}
+                      rows={5}
+                      className="bg-navy-50 border-navy-200 focus:bg-white"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* All other styling options - only show when using presets */}
+              <AnimatePresence>
+                {!useCustomTone && (
+                  <motion.div
+                    key="all-options"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-8"
+                  >
+                    {/* Colors */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Color theme
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {colorOptions.map((color) => (
+                          <button
+                            key={color.value}
+                            onClick={() => updateFormData('color', color.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3
+                              ${formData.color === color.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span 
+                              className="w-6 h-6 rounded-full flex-shrink-0 border border-navy-200" 
+                              style={{ backgroundColor: color.color }}
+                            />
+                            <span className="text-sm font-medium text-navy-800">{color.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Feel */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Overall feel
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {feelOptions.map((feel) => (
+                          <button
+                            key={feel.value}
+                            onClick={() => updateFormData('feel', feel.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.feel === feel.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-xl mb-1 block">{feel.icon}</span>
+                            <span className="text-sm font-medium text-navy-800 block">{feel.label}</span>
+                            <span className="text-xs text-navy-500">{feel.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Email Width */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Email width
+                      </label>
+                      <div className="grid grid-cols-3 gap-3">
+                        {widthOptions.map((width) => (
+                          <button
+                            key={width.value}
+                            onClick={() => updateFormData('emailWidth', width.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.emailWidth === width.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-sm font-medium text-navy-800 block">{width.label}</span>
+                            <span className="text-xs text-navy-500">{width.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Border Radius */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Corner style
+                      </label>
+                      <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                        {borderRadiusOptions.map((radius) => (
+                          <button
+                            key={radius.value}
+                            onClick={() => updateFormData('borderRadius', radius.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.borderRadius === radius.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-sm font-medium text-navy-800 block">{radius.label}</span>
+                            <span className="text-xs text-navy-500">{radius.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Shadow */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Shadow depth
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {shadowOptions.map((shadow) => (
+                          <button
+                            key={shadow.value}
+                            onClick={() => updateFormData('shadow', shadow.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.shadow === shadow.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-sm font-medium text-navy-800 block">{shadow.label}</span>
+                            <span className="text-xs text-navy-500">{shadow.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Spacing */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Content spacing
+                      </label>
+                      <div className="grid grid-cols-3 gap-3">
+                        {spacingOptions.map((spacing) => (
+                          <button
+                            key={spacing.value}
+                            onClick={() => updateFormData('spacing', spacing.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.spacing === spacing.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-sm font-medium text-navy-800 block">{spacing.label}</span>
+                            <span className="text-xs text-navy-500">{spacing.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Header Style */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Header style
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {headerStyleOptions.map((header) => (
+                          <button
+                            key={header.value}
+                            onClick={() => updateFormData('headerStyle', header.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.headerStyle === header.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-sm font-medium text-navy-800 block">{header.label}</span>
+                            <span className="text-xs text-navy-500">{header.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Font */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Font style
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {fontOptions.map((font) => (
+                          <button
+                            key={font.value}
+                            onClick={() => updateFormData('font', font.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.font === font.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-sm font-medium text-navy-800 block">{font.label}</span>
+                            <span className="text-xs text-navy-500">{font.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Style */}
+                    <div>
+                      <label className="block text-sm font-medium text-navy-700 mb-3">
+                        Overall style
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {styleOptions.map((style) => (
+                          <button
+                            key={style.value}
+                            onClick={() => updateFormData('style', style.value)}
+                            className={`
+                              p-3 rounded-xl border-2 transition-all text-left
+                              ${formData.style === style.value 
+                                ? 'border-brand-blue bg-brand-blue/5' 
+                                : 'border-navy-200 hover:border-navy-300'}
+                            `}
+                          >
+                            <span className="text-sm font-medium text-navy-800 block">{style.label}</span>
+                            <span className="text-xs text-navy-500">{style.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         );
@@ -586,8 +872,41 @@ export const DetailedEmailForm = () => {
               
               <div className="p-3 bg-navy-50 rounded-lg">
                 <p className="text-xs text-navy-500 mb-1">Tone & Style</p>
-                <p className="text-sm font-medium text-navy-800 capitalize">
-                  {formData.tone} • {formData.style} • {formData.font} font
+                {useCustomTone && customTone.trim() ? (
+                  <p className="text-sm text-navy-800 italic">Custom: {customTone.substring(0, 100)}{customTone.length > 100 ? '...' : ''}</p>
+                ) : (
+                  <p className="text-sm font-medium text-navy-800 capitalize">
+                    {formData.tone} • {formData.style}
+                  </p>
+                )}
+              </div>
+
+              <div className="p-3 bg-navy-50 rounded-lg">
+                <p className="text-xs text-navy-500 mb-1">Design Choices</p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-white rounded-full text-xs">
+                    <span 
+                      className="w-3 h-3 rounded-full border border-navy-200" 
+                      style={{ backgroundColor: colorOptions.find(c => c.value === formData.color)?.color || '#1e3a5f' }}
+                    />
+                    {colorOptions.find(c => c.value === formData.color)?.label}
+                  </span>
+                  <span className="inline-flex items-center px-2 py-1 bg-white rounded-full text-xs">
+                    {formData.emailWidth}% width
+                  </span>
+                  <span className="inline-flex items-center px-2 py-1 bg-white rounded-full text-xs capitalize">
+                    {formData.borderRadius} corners
+                  </span>
+                  <span className="inline-flex items-center px-2 py-1 bg-white rounded-full text-xs capitalize">
+                    {formData.shadow} shadow
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-navy-50 rounded-lg">
+                <p className="text-xs text-navy-500 mb-1">Additional Styling</p>
+                <p className="text-sm text-navy-800 capitalize">
+                  {formData.feel} feel • {formData.spacing} spacing • {formData.font} font
                 </p>
               </div>
               
@@ -623,9 +942,9 @@ export const DetailedEmailForm = () => {
       <Layout>
         <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
           <MagicLoader 
-            currentStep={loadingStep}
             title={currentStep === 3 ? 'Generating preview...' : 'Crafting your masterpiece...'}
             subtitle={currentStep === 3 ? 'Creating HTML email' : 'Every detail matters'}
+            variant="generating"
           />
         </div>
       </Layout>
