@@ -68,6 +68,24 @@
     - Updated memory bank documentation with network configuration details
     - Normalized escaped quotes in page components to proper apostrophes
 
+12. Default Sender Information (April 15, 2026):
+    - Updated HomePage banner to show users can send emails from "free-email@jetimworks.com"
+    - Updated SettingsPage hint text: "free-email@jetimworks.com" with sender name "Anonymous"
+    - Sender Information fields now pre-fill with defaults: email = "free-email@jetimworks.com", name = "Anonymous"
+
+13. HTML Preview Improvements (April 15, 2026):
+    - Made HTML preview containers 100% wide in YoloEmailForm and DetailedEmailForm
+    - Added `[&_table]:w-full [&_*]:max-w-full` CSS classes for full-width rendering
+
+14. History Page Improvements (April 15, 2026):
+    - Removed All/YOLO/Detailed filter tabs
+    - History items now show all records together
+    - Prompt is now always visible in history cards (shows first 2 lines with line-clamp-2)
+
+15. Backend Fix (April 15, 2026):
+    - Backend now saves prompts in email history when using preview endpoint
+    - No frontend changes needed - backend fix ensures prompts are persisted
+
 ## Current Focus
 
 - Application is built and ready for testing
@@ -97,3 +115,5 @@
 - Preview payload: `{ process: "gen", prompt: "..." }`
 - Confirm payload: `{ process: "email", to, subject, html }`
 - **Network development**: Vite server accessible at `http://0.0.0.0:5173`, API at `http://172.20.10.3:8080`
+- **Default sender**: emails come from `free-email@jetimworks.com` with name `Anonymous`
+- **History page**: no filter tabs, all items shown together, prompt always visible

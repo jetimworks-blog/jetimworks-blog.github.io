@@ -853,7 +853,7 @@ export const DetailedEmailForm = () => {
                 </button>
               </div>
               <div 
-                className="p-6 bg-white max-h-96 overflow-y-auto"
+                className="p-6 bg-white max-h-96 overflow-auto [&_table]:w-full [&_*]:max-w-full"
                 dangerouslySetInnerHTML={{ __html: generatedHtml || '<p class="text-navy-400">No preview generated</p>' }}
               />
             </div>

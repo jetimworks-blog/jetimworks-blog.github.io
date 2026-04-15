@@ -174,37 +174,13 @@ export const HistoryPage = () => {
           </div>
         </motion.div>
 
-        {/* Filters */}
+        {/* History count */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center justify-between mb-6"
+          className="mb-6"
         >
-          {/* Filter Tabs */}
-          <div className="flex gap-2">
-            {[
-              { value: 'all', label: 'All' },
-              { value: 'yolo', label: 'YOLO' },
-              { value: 'detailed', label: 'Detailed' },
-            ].map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setFilter(tab.value)}
-                className={`
-                  px-4 py-2 rounded-lg text-sm font-medium transition-all
-                  ${filter === tab.value
-                    ? 'bg-navy-700 text-white'
-                    : 'bg-navy-100 text-navy-600 hover:bg-navy-200'
-                  }
-                `}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Total count */}
           <p className="text-sm text-navy-500">
             {total} total records
           </p>
@@ -296,6 +272,11 @@ export const HistoryPage = () => {
                       {/* Recipient */}
                       <p className="text-sm text-navy-500 truncate">
                         To: {item.to}
+                      </p>
+
+                      {/* Prompt (always visible) */}
+                      <p className="text-sm text-navy-400 mt-2 line-clamp-2">
+                        <span className="font-medium">Prompt:</span> {item.prompt || 'No prompt recorded'}
                       </p>
                     </div>
 

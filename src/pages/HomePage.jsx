@@ -79,10 +79,10 @@ export const HomePage = () => {
             <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h3 className="font-semibold text-yellow-800 mb-1">
-                Setup Required: Resend API Key
+                Setup Recommended: Resend API Key
               </h3>
               <p className="text-sm text-yellow-700 mb-3">
-                To send emails, you'll need to configure your Resend API key. This keeps your email sending secure and under your control.
+                You can send emails now, but they'll come from <strong>free-email@jetimworks.com</strong>. For full control, configure your own Resend API key.
               </p>
               <Link to="/settings">
                 <Button variant="secondary" size="sm" className="bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800">

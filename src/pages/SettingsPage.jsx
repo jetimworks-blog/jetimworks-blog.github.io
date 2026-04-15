@@ -35,9 +35,9 @@ export const SettingsPage = () => {
     try {
       const response = await configAPI.get();
       setHasApiKey(response.data.has_resend_key || false);
-      // Load sender information
-      setFromEmail(response.data.from_email || '');
-      setFromName(response.data.from_name || '');
+      // Load sender information with defaults
+      setFromEmail(response.data.from_email || 'free-email@jetimworks.com');
+      setFromName(response.data.from_name || 'Anonymous');
     } catch (error) {
       console.error('Failed to load config:', error);
     } finally {
@@ -352,7 +352,7 @@ export const SettingsPage = () => {
               <div className="flex items-start gap-2">
                 <Mail className="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-navy-600">
-                  If not set, emails will use your account email and "Anonymous" as the sender name.
+                  If not set, emails will come from <strong>free-email@jetimworks.com</strong> with the sender name <strong>Anonymous</strong>.
                 </p>
               </div>
             </div>

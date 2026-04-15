@@ -22,6 +22,10 @@
 ✅ **Two-step email workflow**: Preview generation + confirm send
 ✅ HTML preview display with regenerate functionality
 ✅ `emailAPI.confirm()` method for `/app/execute/confirm` endpoint
+✅ **Default sender settings**: emails from `free-email@jetimworks.com` with name `Anonymous`
+✅ **HTML preview 100% wide**: Full-width rendering in preview containers
+✅ **History page improvements**: No filter tabs, all items shown together, prompt always visible
+✅ **Backend fix**: Prompts now saved in email history
 
 ## What's Left
 
@@ -56,6 +60,6 @@
 | src/pages/YoloEmailForm.jsx | Quick email form (two-step: gen preview → confirm send) |
 | src/pages/DetailedEmailForm.jsx | Detailed email wizard (two-step: gen preview → confirm send) |
 | src/pages/EmailResult.jsx | Email result with error handling |
-| src/pages/HistoryPage.jsx | Email history with clickable cards |
+| src/pages/HistoryPage.jsx | Email history with clickable cards, no filter tabs, prompt visible |
 | src/pages/SettingsPage.jsx | API key + sender configuration |
 | src/lib/validation.js | Validation utils |

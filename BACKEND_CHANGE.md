@@ -1,22 +1,48 @@
-# Backend Change Summary
+# Backend Change: Prompts Now Saved in Email History
 
-## Commit: fcb1c63746d727f334e587cf0d2767cf2d6b2bfb
-**feat: split execute endpoint into preview and confirm for two-step email workflow**
+## Summary
+Fixed a bug where prompts were not being saved in email history when using the preview endpoint.
 
-## Uncommitted Changes (This Session)
+## Change Details
 
-### Feature: Default Resend API Key Fallback
+### File: `internal/rest/app_handler.go`
 
-When a user has no Resend API key configured, the backend now falls back to a default key from environment config.
+**Before (ExecutePreview handler - history creation):**
+```go
+history := &domain.EmailHistory{
+    UserID:        execCtx.UserID,
+    Process:       execCtx.Payload.Process,
+    GeneratedHtml: output,
+    Duration:      duration,
+}
+```
 
-**Files changed:**
-- `internal/config/config.go` - Added `DefaultResendAPIKey` field
-- `internal/rest/app_handler.go` - Updated to use fallback key
+**After (ExecutePreview handler - history creation):**
+```go
+history := &domain.EmailHistory{
+    UserID:        execCtx.UserID,
+    Process:       execCtx.Payload.Process,
+    Prompt:        execCtx.Payload.Prompt,  // NEW: Now saves the prompt
+    GeneratedHtml: output,
+    Duration:      duration,
+}
+```
 
-**Behavior change:**
-- Previously: Users without a ResendAPIKey in their config would get `missing_resend_api_key` error
-- Now: Users without a ResendAPIKey in their config will use the default `RESEND_API_KEY` from .env
+## Endpoint Affected
+- `POST /v1/execute/preview` (gen process)
 
-**No API/Payload changes** - The endpoints, request/response formats remain the same.
+## Frontend Impact
+When using the preview endpoint, the `prompt` field will now be included in email history records. No frontend changes required - the backend fix ensures prompts are persisted for the `/v1/email-history` GET endpoint responses.
 
-**Backend requires:** `.env` must have `RESEND_API_KEY=your_key` set for the fallback to work.
+## Related Context
+The email history response includes:
+- `id` - UUID
+- `process` - "gen", "email", "chat", "gen-email"
+- `prompt` - The AI prompt used (now properly saved)
+- `generated_html` - The HTML output from gen process
+- `to` - Recipient email
+- `subject` - Email subject
+- `success` - Boolean
+- `error_message` - Error if failed
+- `duration_ms` - Execution time
+- `created_at` - Timestamp
