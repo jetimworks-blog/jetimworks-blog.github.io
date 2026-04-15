@@ -57,3 +57,15 @@ emailAPI.confirm(data)     // Step 2: Send email
 - No tailwind.config.js file
 - Custom theme in `src/index.css` using `@theme`
 - Fonts: Playfair Display (headings), Merriweather (body)
+
+## GitHub Pages Deployment
+
+- **Repository**: `jetimworks-blog/jetimworks-blog.github.io`
+- **Vite config**: Uses `command === 'serve'` check for base path
+  - Development (`npm run dev`): base = `/`
+  - Production (`npm run build`): base = `/`
+- **Workflow**: `.github/workflows/deploy.yml`
+  - Triggers on push to `main`
+  - Uses `actions/deploy-pages@v4`
+- **Build output**: `dist/` folder
+- **Environment vars**: Set via GitHub Actions Variables (`API_BASE_URL`)

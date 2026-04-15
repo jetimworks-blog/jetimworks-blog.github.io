@@ -28,6 +28,15 @@
 - Full E2E testing with backend
 - Code splitting for bundle optimization
 
+## Deployment
+
+✅ **GitHub Pages Deployment** (completed 2024-04-15)
+- Repository: `jetimworks-blog/jetimworks-blog.github.io`
+- URL: https://jetimworks-blog.github.io/
+- GitHub Actions workflow for automated deployment
+- Base path: `/` (root, not `/blog/`)
+- Build config: `npm run build` → `dist/`
+
 ## Known Issues
 
 - Pre-existing lint warnings in unused motion imports (Navbar.jsx, Button.jsx, etc.)
