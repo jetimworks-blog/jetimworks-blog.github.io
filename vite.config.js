@@ -5,8 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
-  // Use /blog/ for production builds (GitHub Pages), / for local development
-  base: command === 'serve' ? '/' : '/blog/',
+  base: command === 'serve' ? '/' : '/',
   build: {
     outDir: 'dist',
     sourcemap: false,
