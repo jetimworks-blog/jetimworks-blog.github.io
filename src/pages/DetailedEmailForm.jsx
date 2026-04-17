@@ -9,10 +9,31 @@ import { Textarea } from '../components/ui/Textarea';
 import { Card } from '../components/ui/Card';
 import { MagicLoader } from '../components/ui/MagicLoader';
 import { ProgressSteps } from '../components/ui/ProgressSteps';
-import { emailAPI } from '../lib/api';
+import { emailAPI, configAPI } from '../lib/api';
 import { validateEmail, validateRequired } from '../lib/validation';
+import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Send, Sparkles, ChevronRight, ChevronLeft, Eye, RefreshCw, Pencil, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// Helper function to extract name from email address
+const extractNameFromEmail = (email) => {
+  if (!email) return 'User';
+  const localPart = email.split('@')[0];
+  // Handle common patterns like john.doe, john_doe, johndoe, john
+  const nameParts = localPart.split(/[._-]/);
+  // Capitalize first letter of each part
+  return nameParts
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// Helper function to get the sender name to use in the instruction
+const getSenderName = (user, fromName) => {
+  if (fromName && fromName.trim() && fromName.trim() !== 'Anonymous') {
+    return fromName.trim();
+  }
+  return extractNameFromEmail(user?.email);
+};
 
 
 const steps = ['Basics', 'Tone & Style', 'Content', 'Preview'];
@@ -102,8 +123,10 @@ const headerStyleOptions = [
 export const DetailedEmailForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [fromName, setFromName] = useState('');
   const [formData, setFormData] = useState({
     // Step 1: Basics
     to: '',
@@ -146,6 +169,20 @@ export const DetailedEmailForm = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  // Fetch config to get from_name
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await configAPI.get();
+        setFromName(response.data.from_name || 'Anonymous');
+      } catch (error) {
+        console.error('Failed to load config:', error);
+        setFromName('Anonymous');
+      }
+    };
+    loadConfig();
+  }, []);
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -209,6 +246,9 @@ export const DetailedEmailForm = () => {
     if (formData.includeCTA && formData.ctaText) {
       enhancedPrompt += `\nCall to action: ${formData.ctaText}`;
     }
+    // Append sender name instruction
+    const senderName = getSenderName(user, fromName);
+    enhancedPrompt += `\n\nSign the email that it is from ${senderName}.`;
     return enhancedPrompt;
   };
 

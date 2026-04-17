@@ -9,18 +9,41 @@ import { Textarea } from '../components/ui/Textarea';
 import { Card } from '../components/ui/Card';
 import { MagicLoader } from '../components/ui/MagicLoader';
 import { ProgressSteps } from '../components/ui/ProgressSteps';
-import { emailAPI } from '../lib/api';
+import { emailAPI, configAPI } from '../lib/api';
 import { validateEmail, validateRequired } from '../lib/validation';
+import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Send, Mail, Zap, ChevronRight, Eye, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// Helper function to extract name from email address
+const extractNameFromEmail = (email) => {
+  if (!email) return 'User';
+  const localPart = email.split('@')[0];
+  // Handle common patterns like john.doe, john_doe, johndoe, john
+  const nameParts = localPart.split(/[._-]/);
+  // Capitalize first letter of each part
+  return nameParts
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// Helper function to get the sender name to use in the instruction
+const getSenderName = (user, fromName) => {
+  if (fromName && fromName.trim() && fromName.trim() !== 'Anonymous') {
+    return fromName.trim();
+  }
+  return extractNameFromEmail(user?.email);
+};
 
 const steps = ['Recipient', 'Details', 'Preview', 'Send'];
 
 export const YoloEmailForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [fromName, setFromName] = useState('');
   const [formData, setFormData] = useState({
     to: '',
     subject: '',
@@ -42,6 +65,20 @@ export const YoloEmailForm = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  // Fetch config to get from_name
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await configAPI.get();
+        setFromName(response.data.from_name || 'Anonymous');
+      } catch (error) {
+        console.error('Failed to load config:', error);
+        setFromName('Anonymous');
+      }
+    };
+    loadConfig();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,10 +131,14 @@ export const YoloEmailForm = () => {
     setIsLoading(true);
 
     try {
+      // Append sender name instruction to prompt
+      const senderName = getSenderName(user, fromName);
+      const enhancedPrompt = `${formData.prompt}\n\nSign the email that it is from ${senderName}.`;
+      
       // Step 1: Generate HTML preview using process 'gen'
       const previewPayload = {
         process: 'gen',
-        prompt: formData.prompt,
+        prompt: enhancedPrompt,
       };
 
       const previewResponse = await emailAPI.execute(previewPayload);
@@ -128,9 +169,13 @@ export const YoloEmailForm = () => {
     setIsLoading(true);
 
     try {
+      // Append sender name instruction to prompt
+      const senderName = getSenderName(user, fromName);
+      const enhancedPrompt = `${formData.prompt}\n\nSign the email that it is from ${senderName}.`;
+      
       const previewPayload = {
         process: 'gen',
-        prompt: formData.prompt,
+        prompt: enhancedPrompt,
       };
 
       const previewResponse = await emailAPI.execute(previewPayload);
