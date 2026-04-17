@@ -1,9 +1,6 @@
-# Backend Change: Prompts Now Saved in Email History
+# Backend Changes Summary
 
-## Summary
-Fixed a bug where prompts were not being saved in email history when using the preview endpoint.
-
-## Change Details
+## Change 1: Prompts Now Saved in Email History
 
 ### File: `internal/rest/app_handler.go`
 
@@ -28,16 +25,49 @@ history := &domain.EmailHistory{
 }
 ```
 
-## Endpoint Affected
-- `POST /v1/execute/preview` (gen process)
+---
 
-## Frontend Impact
-When using the preview endpoint, the `prompt` field will now be included in email history records. No frontend changes required - the backend fix ensures prompts are persisted for the `/v1/email-history` GET endpoint responses.
+## Change 2: Only Email Process Saves to History
 
-## Related Context
-The email history response includes:
+The `ExecutePreview` endpoint (gen process) no longer saves to email history. Only `ExecuteConfirm` (email process) saves to history.
+
+This means:
+- `POST /v1/execute/preview` (gen process) - No history saved
+- `POST /v1/execute/confirm` (email process) - History saved
+
+---
+
+## Change 3: Database Cascade Delete
+
+### File: `domain/user.go`
+
+Added cascade delete relationships:
+
+```go
+type User struct {
+    // ... existing fields ...
+    
+    // Cascade delete relationships
+    Configs        []Config        `gorm:"foreignKey:UserID;constraint:OnDelete:Cascade"`
+    EmailHistories []EmailHistory  `gorm:"foreignKey:UserID;constraint:OnDelete:Cascade"`
+}
+```
+
+When a user is deleted, all their configs and email histories are automatically deleted by PostgreSQL.
+
+---
+
+## Endpoint Impact
+
+| Endpoint | Process | Saves History |
+|----------|---------|---------------|
+| POST /v1/execute/preview | gen | ❌ No |
+| POST /v1/execute/confirm | email | ✅ Yes |
+| POST /v1/execute | email/gen/chat/gen-email | ✅ Yes (for all) |
+
+## Email History Response Fields
 - `id` - UUID
-- `process` - "gen", "email", "chat", "gen-email"
+- `process` - "email", "chat", "gen", "gen-email"
 - `prompt` - The AI prompt used (now properly saved)
 - `generated_html` - The HTML output from gen process
 - `to` - Recipient email
