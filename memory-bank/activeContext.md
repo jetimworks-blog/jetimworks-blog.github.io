@@ -97,6 +97,14 @@
     - Uses `configAPI.get()` to fetch sender configuration on mount
     - Helper functions: `extractNameFromEmail()` and `getSenderName()` added to both forms
 
+18. Prompt in Confirm Payload (April 17, 2026):
+    - Added prompt to confirm payload sent to backend
+    - Saves enhancedPrompt to `sessionStorage.setItem('pendingPrompt', enhancedPrompt)` after HTML generation
+    - On send, includes `prompt: savedPrompt` in confirmPayload
+    - Clears sessionStorage with `sessionStorage.removeItem('pendingPrompt')` after successful send
+    - Applies to both YoloEmailForm and DetailedEmailForm
+    - Confirm payload now: `{ process: "email", to, subject, html, prompt }`
+
 ## Current Focus
 
 - Application is built and ready for testing
@@ -124,7 +132,8 @@
 - Loading animation uses setTimeout chain: `stepDurations = [5000, 10000, 5000, 5000, 10000, 5000]`
 - **Two-step email workflow**: Generate preview first, then confirm to send
 - Preview payload: `{ process: "gen", prompt: "..." }`
-- Confirm payload: `{ process: "email", to, subject, html }`
+- Confirm payload: `{ process: "email", to, subject, html, prompt }`
+- Prompt persistence: `sessionStorage.setItem('pendingPrompt', ...)` after generation, cleared after send
 - **Network development**: Vite server accessible at `http://0.0.0.0:5173`, API at `http://172.20.10.3:8080`
 - **Default sender**: emails come from `free-email@jetimworks.com` with name `Anonymous`
 - **History page**: no filter tabs, all items shown together, prompt always visible
