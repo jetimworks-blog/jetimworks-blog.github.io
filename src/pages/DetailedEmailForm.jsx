@@ -268,6 +268,8 @@ export const DetailedEmailForm = () => {
       
       if (previewResponse.data.success) {
         setGeneratedHtml(previewResponse.data.output || '');
+        // Save prompt to sessionStorage for the confirm step
+        sessionStorage.setItem('pendingPrompt', enhancedPrompt);
         setCurrentStep(3); // Go to Preview step
         toast.success('Preview generated!', {
           description: 'Review your email below before sending.',
@@ -303,6 +305,8 @@ export const DetailedEmailForm = () => {
       
       if (previewResponse.data.success) {
         setGeneratedHtml(previewResponse.data.output || '');
+        // Update prompt in sessionStorage for the confirm step
+        sessionStorage.setItem('pendingPrompt', enhancedPrompt);
         toast.success('Preview regenerated!', {
           description: 'Check out the new version.',
         });
@@ -326,17 +330,23 @@ export const DetailedEmailForm = () => {
     setIsLoading(true);
 
     try {
+      // Get the prompt from sessionStorage
+      const savedPrompt = sessionStorage.getItem('pendingPrompt') || '';
+      
       // Confirm and send email with pre-generated HTML
       const confirmPayload = {
         process: 'email',
         to: formData.to,
         subject: formData.subject,
         html: generatedHtml,
+        prompt: savedPrompt,
       };
 
       const sendResponse = await emailAPI.confirm(confirmPayload);
       
       if (sendResponse.data.success) {
+        // Clear the prompt from sessionStorage after successful send
+        sessionStorage.removeItem('pendingPrompt');
         toast.success('Email sent! ✨', {
           description: `Your email has been delivered to ${formData.to}.`,
         });
