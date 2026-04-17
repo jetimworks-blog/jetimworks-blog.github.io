@@ -3,9 +3,12 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   plugins: [react(), tailwindcss()],
-  base: command === 'serve' ? '/' : '/',
+  base: '/',
+  define: {
+    'import.meta.env.MODE': JSON.stringify(mode),
+  },
   build: {
     outDir: 'dist',
     sourcemap: false,
