@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { ToastProvider } from './components/ui/Toast';
@@ -12,9 +13,24 @@ import EmailResult from './pages/EmailResult';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
 
+function RedirectHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const redirectPath = sessionStorage.getItem('redirect');
+    if (redirectPath) {
+      sessionStorage.removeItem('redirect');
+      navigate(redirectPath, { replace: true });
+    }
+  }, [navigate]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <RedirectHandler />
       <AuthProvider>
         <ToastProvider />
         <Routes>

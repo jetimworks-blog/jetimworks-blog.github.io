@@ -4,18 +4,15 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-      sessionStorage.redirect = window.location.pathname;
+      (function() {
+        var path = window.location.pathname;
+        if (path !== '/') {
+          sessionStorage.redirect = path + window.location.search + window.location.hash;
+        }
+        window.location.replace('/');
+      })();
     </script>
-    <meta http-equiv="refresh" content="0;url=/">
   </head>
   <body>
-    Redirecting to home...
-    <script>
-      if (sessionStorage.redirect) {
-        var path = sessionStorage.redirect;
-        sessionStorage.removeItem('redirect');
-        window.location.replace(path);
-      }
-    </script>
   </body>
 </html>
