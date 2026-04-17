@@ -15,7 +15,19 @@ export const HomePage = () => {
 
   useEffect(() => {
     loadConfig();
+    checkJustSignedUp();
   }, []);
+
+  const checkJustSignedUp = () => {
+    const justSignedUp = localStorage.getItem('justSignedUp') === 'true';
+    const settingsUpdated = localStorage.getItem('settingsUpdated') === 'true';
+    // Show sender details warning if just signed up AND settings not yet updated
+    if (justSignedUp && !settingsUpdated) {
+      setShowApiKeyBanner(true);
+      // Clear the justSignedUp flag so warning doesn't reappear on refresh
+      localStorage.removeItem('justSignedUp');
+    }
+  };
 
   const loadConfig = async () => {
     try {
@@ -69,31 +81,31 @@ export const HomePage = () => {
           </p>
         </motion.div>
 
-        {/* API Key Banner */}
+        {/* Sender Details Warning Banner */}
         {showApiKeyBanner && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-4"
+            className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-4"
           >
-            <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-yellow-800 mb-1">
-                Setup Recommended: Resend API Key
+              <h3 className="font-semibold text-blue-800 mb-1">
+                Update Your Sender Details
               </h3>
-              <p className="text-sm text-yellow-700 mb-3">
-                You can send emails now, but they'll come from <strong>free-email@jetimworks.com</strong>. For full control, configure your own Resend API key.
+              <p className="text-sm text-blue-700 mb-3">
+                Your emails will be sent from <strong>free-email@jetimworks.com</strong> with the name <strong>Anonymous</strong>. Head to Settings to customize your sender information.
               </p>
               <Link to="/settings">
-                <Button variant="secondary" size="sm" className="bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800">
-                  Configure API Key
+                <Button variant="secondary" size="sm" className="bg-blue-100 hover:bg-blue-200 border-blue-300 text-blue-800">
+                  Go to Settings
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
             </div>
             <button
               onClick={() => setShowApiKeyBanner(false)}
-              className="text-yellow-600 hover:text-yellow-800 transition-colors"
+              className="text-blue-600 hover:text-blue-800 transition-colors"
             >
               ✕
             </button>

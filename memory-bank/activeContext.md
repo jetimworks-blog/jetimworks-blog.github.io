@@ -142,3 +142,10 @@
 - **Network development**: Vite server accessible at `http://0.0.0.0:5173`, API at `http://172.20.10.3:8080`
 - **Default sender**: emails come from `free-email@jetimworks.com` with name `Anonymous`
 - **History page**: no filter tabs, all items shown together, prompt always visible
+
+## New User Onboarding Flow (April 17, 2026)
+- Registration sets `localStorage.setItem('justSignedUp', 'true')`
+- HomePage checks for `justSignedUp` + `!settingsUpdated` to show "Update Your Sender Details" warning
+- SettingsPage saves `localStorage.setItem('settingsUpdated', 'true')` on successful save
+- SettingsPage has advisory: "Only change Sender Name if no valid Resend API Key"
+- Warning cleared after first settings save

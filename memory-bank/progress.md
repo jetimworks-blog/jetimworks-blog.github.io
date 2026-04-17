@@ -26,6 +26,8 @@
 ✅ **HTML preview 100% wide**: Full-width rendering in preview containers
 ✅ **History page improvements**: No filter tabs, all items shown together, prompt always visible
 ✅ **Backend fix**: Prompts now saved in email history
+✅ **New User Onboarding**: Sender details warning on dashboard after signup
+✅ **Settings Advisory**: "Only change Sender Name if no valid Resend API Key" notice
 
 ## What's Left
 

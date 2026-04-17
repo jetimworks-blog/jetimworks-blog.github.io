@@ -74,6 +74,8 @@ export const SettingsPage = () => {
       setHasApiKey(true);
       setApiKey('');
       setSenderError('');
+      // Mark settings as updated to hide dashboard warning
+      localStorage.setItem('settingsUpdated', 'true');
       toast.success('Settings saved!', {
         description: 'Your configuration has been updated.',
       });
@@ -118,6 +120,8 @@ export const SettingsPage = () => {
       }
       await configAPI.set(payload);
       setSenderError('');
+      // Mark settings as updated to hide dashboard warning
+      localStorage.setItem('settingsUpdated', 'true');
       toast.success('Sender information saved!', {
         description: 'Your sender details have been updated.',
       });
@@ -353,6 +357,15 @@ export const SettingsPage = () => {
                 <Mail className="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-navy-600">
                   If not set, emails will come from <strong>free-email@jetimworks.com</strong> with the sender name <strong>Anonymous</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-amber-700">
+                  <strong>Important:</strong> Only change the Sender Name if you do not have a valid Resend API Key. With a valid API key, you can send from your own domain.
                 </p>
               </div>
             </div>

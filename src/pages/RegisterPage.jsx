@@ -81,6 +81,8 @@ export const RegisterPage = () => {
         toast.success('Account created! 🎉', {
           description: "Welcome to Email Crafter. Let's get started!",
         });
+        // Flag that user just signed up - show sender details warning on home
+        localStorage.setItem('justSignedUp', 'true');
         navigate('/home', { replace: true });
       } else {
         toast.error('Registration failed', {
