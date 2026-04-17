@@ -225,20 +225,23 @@ export const DetailedEmailForm = () => {
     
     // Include tone - either from preset or custom description
     if (useCustomTone && customTone.trim()) {
+      // Only use custom description, skip all preset styles
       enhancedPrompt += `\n\nTone & Style Description: ${customTone}`;
     } else {
+      // Use preset styles
       enhancedPrompt += `\n\nTone: ${formData.tone}`;
+      enhancedPrompt += `\nStyle: ${formData.style}`;
+      enhancedPrompt += `\nFont preference: ${formData.font}`;
+      enhancedPrompt += `\nColor theme: ${formData.color}`;
+      enhancedPrompt += `\nOverall feel: ${formData.feel}`;
+      enhancedPrompt += `\nEmail width: ${formData.emailWidth}%`;
+      enhancedPrompt += `\nBorder radius: ${formData.borderRadius}`;
+      enhancedPrompt += `\nShadow depth: ${formData.shadow}`;
+      enhancedPrompt += `\nContent spacing: ${formData.spacing}`;
+      enhancedPrompt += `\nHeader style: ${formData.headerStyle}`;
     }
     
-    enhancedPrompt += `\nStyle: ${formData.style}`;
-    enhancedPrompt += `\nFont preference: ${formData.font}`;
-    enhancedPrompt += `\nColor theme: ${formData.color}`;
-    enhancedPrompt += `\nOverall feel: ${formData.feel}`;
-    enhancedPrompt += `\nEmail width: ${formData.emailWidth}%`;
-    enhancedPrompt += `\nBorder radius: ${formData.borderRadius}`;
-    enhancedPrompt += `\nShadow depth: ${formData.shadow}`;
-    enhancedPrompt += `\nContent spacing: ${formData.spacing}`;
-    enhancedPrompt += `\nHeader style: ${formData.headerStyle}`;
+    // Always include word count
     enhancedPrompt += `\nWord count: ${formData.wordCountMin}-${formData.wordCountMax} words`;
     if (formData.keyMessage) {
       enhancedPrompt += `\nKey message to convey: ${formData.keyMessage}`;
