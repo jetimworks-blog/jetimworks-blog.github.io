@@ -105,6 +105,11 @@
     - Applies to both YoloEmailForm and DetailedEmailForm
     - Confirm payload now: `{ process: "email", to, subject, html, prompt }`
 
+19. Custom Tone Only (April 17, 2026):
+    - When user selects "Describe my own" in DetailedEmailForm, only their custom description is used
+    - Preset styles (Style, Font, Color, Feel, Width, Border, Shadow, Spacing, Header) are skipped
+    - Word count, key message, CTA, and sender name are always included
+
 ## Current Focus
 
 - Application is built and ready for testing
