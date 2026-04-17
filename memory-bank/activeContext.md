@@ -90,6 +90,13 @@
     - Backend now saves prompts in email history when using preview endpoint
     - No frontend changes needed - backend fix ensures prompts are persisted
 
+17. Sender Name in Email Prompt (April 17, 2026):
+    - Added "Sign the email that it is from [name]" instruction to AI-generated prompts
+    - Both YoloEmailForm and DetailedEmailForm now append this instruction
+    - If from_name is "Anonymous" or empty, extracts name from user's email (e.g., "john.doe@gmail.com" → "John Doe")
+    - Uses `configAPI.get()` to fetch sender configuration on mount
+    - Helper functions: `extractNameFromEmail()` and `getSenderName()` added to both forms
+
 ## Current Focus
 
 - Application is built and ready for testing
